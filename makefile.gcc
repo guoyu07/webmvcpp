@@ -4,8 +4,6 @@ OBJ = $(SRC_FILES:.cpp=.o) $(SRC_FILES:.c=.o)
 
 APPLICATION_NAME = webmvcpp
 
-INCLUDES = -I./src/3rdparty
-
 CC = gcc
 CCC = g++
 CFLAGS = -O2 -fPIC
@@ -20,13 +18,14 @@ debug: CCFLAGS += -DDEBUG -g
 debug: default
 
 .c.o:
-	$(CC) $(INCLUDES) $(CFLAGS) -c $<
+	$(CC) $(CFLAGS) -c $<
 	
 .cpp.o:
-	$(CCC) $(INCLUDES) $(CCFLAGS) -c $<
+	$(CCC) $(CCFLAGS) -c $<
 
 $(APPLICATION_NAME): $(OBJ)
 	$(CCC) -o ./$(APPLICATION_NAME) *.o -pthread -ldl
+	rm -rf *.o
 
 install:
 	@install -D ./$(APPLICATION_NAME) $(DESTDIR)

@@ -28,7 +28,7 @@
 #include <codecvt>
 
 #include <winsock.h>
-#include "dirent_win32.h"
+#include "3rdparty/dirent_win32.h"
 #else
 #include <dlfcn.h>
 #include <pthread.h>
@@ -58,7 +58,7 @@
 #define min(a,b) (((a) < (b)) ? (a) : (b))
 #endif
 
-#include "boost/intrusive_ptr.hpp"
+#include "3rdparty/boost/intrusive_ptr.hpp"
 
 namespace webmvcpp
 {
@@ -76,11 +76,12 @@ namespace webmvcpp
 
 #define $(c) make_##c
 
-#include "http_parser/http_parser.h"
-#include "multipart_parser/multipart_parser.h"
-#include "json.hpp"
-#include "pugixml/pugixml.hpp"
-#include "md5/md5.h"
+#include "3rdparty/http_parser/http_parser.h"
+#include "3rdparty/multipart_parser/multipart_parser.h"
+#include "3rdparty/json.hpp"
+#include "3rdparty/pugixml/pugixml.hpp"
+#include "3rdparty/md5/md5.h"
+
 #include "variant.h"
 
 #include "httprequest.h"
