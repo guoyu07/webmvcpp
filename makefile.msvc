@@ -1,0 +1,33 @@
+
+!include <sources.mk>
+
+APPLICATION_NAME = webmvcpp.exe
+
+INCLUDES = ./src/3rdparty
+
+CFLAGS = /Ox
+CPPFLAGS = /EHsc /Ox
+
+DEBUGFLAGS = /Zi /DEBUG
+
+LIBRARIES = ws2_32.lib advapi32.lib user32.lib
+
+CC = cl
+CPPC = cl
+
+default: $(APPLICATION_NAME)
+
+$(APPLICATION_NAME):
+	@cl $(CPPFLAGS) /I$(INCLUDES) /c $(SRC_FILES)
+	@link /OUT:$(APPLICATION_NAME) $(LIBRARIES) *.obj /SUBSYSTEM:CONSOLE
+	@del /S /Q *.obj
+
+debug:
+	@cl $(CPPFLAGS) $(DEBUGFLAGS) /I$(INCLUDES) /c $(SRC_FILES)
+	@link /OUT:$(APPLICATION_NAME) $(LIBRARIES) *.obj /SUBSYSTEM:CONSOLE
+
+clean:
+    @del /S /Q *.obj
+    @del /Q $(APPLICATION_NAME)
+
+all: clean default

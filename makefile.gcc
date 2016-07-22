@@ -1,0 +1,39 @@
+include sources.mk
+
+OBJ = $(SRC_FILES:.cpp=.o) $(SRC_FILES:.c=.o)
+
+APPLICATION_NAME = webmvcpp
+
+INCLUDES = -I./src/3rdparty
+
+CC = gcc
+CCC = g++
+CFLAGS = -O2 -fPIC
+CCFLAGS = -O2 -std=c++11 -fPIC -Wall -Ofast -fno-rtti
+
+DESTDIR = /usr/local/bin
+
+default: $(APPLICATION_NAME)
+
+debug: CFLAGS += -DDEBUG -g
+debug: CCFLAGS += -DDEBUG -g
+debug: default
+
+.c.o:
+	$(CC) $(INCLUDES) $(CFLAGS) -c $<
+	
+.cpp.o:
+	$(CCC) $(INCLUDES) $(CCFLAGS) -c $<
+
+$(APPLICATION_NAME): $(OBJ)
+	$(CCC) -o ./$(APPLICATION_NAME) *.o -pthread -ldl
+
+install:
+	@install -D ./$(APPLICATION_NAME) $(DESTDIR)
+
+uninstall:
+	@rm -f $(DESTDIR)/$(APPLICATION_NAME)
+
+clean:
+	rm -rf *.o
+	rm -f ./$(APPLICATION_NAME)
