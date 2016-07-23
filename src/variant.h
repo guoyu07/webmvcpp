@@ -49,6 +49,13 @@ namespace webmvcpp
             return *this;
         }
 
+		template <typename T> variant_impl& operator=(const T & val)
+		{
+			set(val);
+
+			return *this;
+		}
+
         std::string to_string() const
         { 
             if (valueBuffer.size()==0)
@@ -284,16 +291,114 @@ namespace webmvcpp
         }
     };
 
-    struct variant_constructor {
-        static variant_impl *make(){ return new variant_impl(); }
-        static variant_impl *make(const std::vector<unsigned char> & val) { return new variant_impl(val); }
-        static variant_impl *make(const std::string & val) { return new variant_impl(val); }
-        static variant_impl *make(const std::wstring & val) { return new variant_impl(val); }
-        static variant_impl *make(const bool & val) { return new variant_impl(val); }
-        static variant_impl *make(const void * memPtr, unsigned int memSize) { return new variant_impl(memPtr, memSize); }
-        template <typename T> static variant_impl *make(const T & val) { return new variant_impl(val); }
-    };
-    typedef boost::intrusive_ptr<variant_impl> variant;
+	class variant
+	{
+	public:
+
+		typedef variant_impl element_type;
+
+		variant() : p_(0)
+		{
+		}
+
+		inline void variant_add_ref(variant_impl *p)
+		{
+			++(p->reference);
+		}
+
+		inline void variant_release(variant_impl *p)
+		{
+			if (--(p->reference) == 0)
+				delete p;
+		}
+
+		variant(variant_impl * p, bool add_ref = true) : p_(p)
+		{
+			if (p_ != 0 && add_ref) variant_add_ref(p_);
+		}
+
+		variant(variant const & rhs) : p_(rhs.p_)
+		{
+			if (p_ != 0) variant_add_ref(p_);
+		}
+
+		~variant()
+		{
+			if (p_ != 0) variant_release(p_);
+		}
+
+		variant & operator=(variant const & rhs)
+		{
+			variant(rhs).swap(*this);
+			return *this;
+		}
+
+		variant & operator=(variant_impl * rhs)
+		{
+			variant(rhs).swap(*this);
+			return *this;
+		}
+
+		variant& operator=(const std::vector<unsigned char> & val)
+		{
+			p_->set(val);
+
+			return *this;
+		}
+
+		variant& operator=(const std::string & val)
+		{
+			p_->set(val);
+
+			return *this;
+		}
+
+		variant& operator=(const std::wstring & val)
+		{
+			p_->set(val);
+
+			return *this;
+		}
+
+		variant& operator=(const bool & val)
+		{
+			p_->set(val);
+
+			return *this;
+		}
+
+		template <typename T> variant& operator=(const T & val)
+		{
+			p_->set(val);
+
+			return *this;
+		}
+
+		variant_impl * get() const
+		{
+			return p_;
+		}
+
+		variant_impl & operator*() const
+		{
+			return *p_;
+		}
+
+		variant_impl * operator->() const
+		{
+			return p_;
+		}
+
+		void swap(variant & rhs)
+		{
+			variant_impl * tmp = p_;
+			p_ = rhs.p_;
+			rhs.p_ = tmp;
+		}
+
+	private:
+		variant_impl * p_;
+	};
 
     class variant_map : public std::map<std::string, variant>
     {
@@ -305,7 +410,7 @@ namespace webmvcpp
                 return it->second;
             else
             {
-                const variant vptr = variant_constructor::make(uint64_t(0));
+                variant vptr = new variant_impl(0);
                 this->insert(std::pair<std::string, variant>(idx, vptr));
                 return vptr;
             }
@@ -318,7 +423,7 @@ namespace webmvcpp
                 return it->second;
             else
             {
-                return variant_constructor::make();
+                return new variant_impl();
             }
         }
     };
