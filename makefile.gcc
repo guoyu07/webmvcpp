@@ -1,13 +1,15 @@
+APPLICATION_NAME = webmvcpp
+
 include sources.mk
 
 OBJ = $(SRC_FILES:.cpp=.o) $(SRC_FILES:.c=.o)
 
-APPLICATION_NAME = webmvcpp
+INCLUDES = -I./src/3rdparty
 
 CC = gcc
 CCC = g++
-CFLAGS = -O2 -fPIC
-CCFLAGS = -O2 -std=c++11 -fPIC -Wall -Ofast -fno-rtti
+CFLAGS = -O3 -fPIC
+CCFLAGS = -O3 -std=c++11 -fPIC -Wall -Ofast -fno-rtti
 
 DESTDIR = /usr/local/bin
 
@@ -18,14 +20,13 @@ debug: CCFLAGS += -DDEBUG -g
 debug: default
 
 .c.o:
-	$(CC) $(CFLAGS) -c $<
+	$(CC) $(INCLUDES) $(CFLAGS) -c $<
 	
 .cpp.o:
-	$(CCC) $(CCFLAGS) -c $<
+	$(CCC) $(INCLUDES) $(CCFLAGS) -c $<
 
 $(APPLICATION_NAME): $(OBJ)
 	$(CCC) -o ./$(APPLICATION_NAME) *.o -pthread -ldl
-	rm -rf *.o
 
 install:
 	@install -D ./$(APPLICATION_NAME) $(DESTDIR)

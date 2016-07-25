@@ -3,6 +3,8 @@
 
 APPLICATION_NAME = webmvcpp.exe
 
+INCLUDES = ./src/3rdparty
+
 CFLAGS = /Ox
 CPPFLAGS = /EHsc /Ox
 
@@ -16,12 +18,12 @@ CPPC = cl
 default: $(APPLICATION_NAME)
 
 $(APPLICATION_NAME):
-	@cl $(CPPFLAGS) /c $(SRC_FILES)
+	@cl $(CPPFLAGS) /I$(INCLUDES) /c $(SRC_FILES)
 	@link /OUT:$(APPLICATION_NAME) $(LIBRARIES) *.obj /SUBSYSTEM:CONSOLE
 	@del /S /Q *.obj
 
 debug:
-	@cl $(CPPFLAGS) $(DEBUGFLAGS) /c $(SRC_FILES)
+	@cl $(CPPFLAGS) $(DEBUGFLAGS) /I$(INCLUDES) /c $(SRC_FILES)
 	@link /OUT:$(APPLICATION_NAME) $(LIBRARIES) *.obj /SUBSYSTEM:CONSOLE
 
 clean:
