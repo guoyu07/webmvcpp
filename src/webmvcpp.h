@@ -60,6 +60,22 @@
 
 #include "3rdparty/boost/intrusive_ptr.hpp"
 
+#include "3rdparty/http_parser/http_parser.h"
+#include "3rdparty/multipart_parser/multipart_parser.h"
+#include "3rdparty/json.hpp"
+#include "3rdparty/pugixml/pugixml.hpp"
+#include "3rdparty/md5/md5.h"
+
+using namespace nlohmann;
+
+#include "utils.h"
+#include "systemutils.h"
+
+#include "mimefiletypes.h"
+
+#include "httprequest.h"
+#include "httpresponse.h"
+
 namespace webmvcpp
 {
     class webmvcobject
@@ -72,27 +88,33 @@ namespace webmvcpp
         {}
         unsigned long reference;
     };
+
+	class core;
+	class http_server;
+	class http_connection;
+	class session_manager;
+
+	class core_prototype {
+	public:
+		virtual bool process_request(http_connection *connection, http_request & request, http_response & response) = 0;
+		virtual session_manager *get_session_manager() = 0;
+		virtual mime_file_types *get_mime_types() = 0;
+	};
 }
 
 #define $(c) make_##c
 
-#include "3rdparty/http_parser/http_parser.h"
-#include "3rdparty/multipart_parser/multipart_parser.h"
-#include "3rdparty/json.hpp"
-#include "3rdparty/pugixml/pugixml.hpp"
-#include "3rdparty/md5/md5.h"
-
 #include "variant.h"
-
-#include "httprequest.h"
-#include "httpresponse.h"
-#include "mimefiletypes.h"
-#include "requestparser.h"
-#include "multipartparser.h"
-
-#include "utils.h"
-#include "systemutils.h"
 #include "errorpage.h"
+#include "multipartparser.h"
+#include "handlers.h"
+#include "requestmodel.h"
+#include "webapplication.h"
+#include "requestparser.h"
+#include "sessionmanager.h"
+#include "connection.h"
+#include "requestmanager.h"
 
-#include "application.h"
-#include "core.h"
+
+#include "applicationloader.h"
+#include "webmvcppcore.h"

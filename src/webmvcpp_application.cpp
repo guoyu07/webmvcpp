@@ -9,6 +9,11 @@ BOOL __stdcall DllMain(HINSTANCE hinstance, DWORD reason, LPVOID reserved)
 
 webmvcpp::application* Application = NULL;
 
+namespace webmvcpp
+{
+	mvc_handlers *mvc_handlers::g = NULL;
+}
+
 extern "C"
 #ifdef _WIN32
     __declspec(dllexport)
@@ -42,7 +47,3 @@ void deinit_module()
 {
     delete Application;
 }
-
-
-#include "application.cpp"
-#include "utils.cpp"
