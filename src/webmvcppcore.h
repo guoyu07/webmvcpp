@@ -17,7 +17,7 @@ namespace webmvcpp
     struct http_request;
     struct http_response;
 
-	class webappconfig_impl : public webmvcobject 
+	class webappconfig
 	{
 	public:
 		std::list<std::string> aliases;
@@ -29,7 +29,6 @@ namespace webmvcpp
 
 		nlohmann::json rawObject;
 	};
-	typedef boost::intrusive_ptr<webappconfig_impl> webappconfig;
 
     class core : public core_prototype
     {
@@ -103,47 +102,47 @@ namespace webmvcpp
 					const std::string & webAppName = hostsIt.key();
 					const auto & webAppConfig = hostsIt.value();
 
-					webappconfig config = new webappconfig_impl();
+					webappconfig config;
 
 					const json::const_iterator aliasesIt = webAppConfig.find("alias");
 					if (aliasesIt != webAppConfig.end()) {
 						const auto aliasesValue = aliasesIt.value();
 						for (json::const_iterator aliasIt = aliasesValue.begin(); aliasIt != aliasesValue.end(); ++aliasIt) {
 							const auto aliasObj = *aliasIt;
-							config->aliases.push_back(aliasObj.get<std::string>());
+							config.aliases.push_back(aliasObj.get<std::string>());
 						}
 					}
 					json::const_iterator moduleIt = webAppConfig.find("module");
 					if (moduleIt != webAppConfig.end()) {
 						const auto moduleValue = moduleIt.value();
-						config->modulePath = moduleValue.get<std::string>();
+						config.modulePath = moduleValue.get<std::string>();
 					}
 					json::const_iterator sessionEnabledIt = webAppConfig.find("sessionsEnabled");
 					if (sessionEnabledIt != webAppConfig.end()) {
 						const auto sessionEnabledValue = sessionEnabledIt.value();
-						config->sessionsEnabled = sessionEnabledValue.get<bool>();
+						config.sessionsEnabled = sessionEnabledValue.get<bool>();
 					}
 					json::const_iterator sessionTimeoutIt = webAppConfig.find("sessionTimeout");
 					if (sessionTimeoutIt != webAppConfig.end()) {
 						const auto sessionTimeoutValue = sessionTimeoutIt.value();
-						config->sessionTimeout = sessionTimeoutValue.get<unsigned long>();
+						config.sessionTimeout = sessionTimeoutValue.get<unsigned long>();
 					}
 					json::const_iterator staticPathIt = webAppConfig.find("staticPath");
 					if (staticPathIt != webAppConfig.end()) {
 						const auto staticPathValue = staticPathIt.value();
-						config->staticPath = staticPathValue.get<std::string>();
+						config.staticPath = staticPathValue.get<std::string>();
 					}
 					json::const_iterator webappPathPathIt = webAppConfig.find("webappPath");
 					if (webappPathPathIt != webAppConfig.end()) {
 						const auto webappPathPathValue = webappPathPathIt.value();
-						config->webappPath = webappPathPathValue.get<std::string>();
+						config.webappPath = webappPathPathValue.get<std::string>();
 					}
-					if (config->staticPath.length() == 0) {
-						config->staticPath = utils::get_parent_directory(config->modulePath) + "/static";
+					if (config.staticPath.length() == 0) {
+						config.staticPath = utils::get_parent_directory(config.modulePath) + "/static";
 					}
 
-					if (config->webappPath.length() == 0) {
-						config->webappPath = utils::get_parent_directory(config->modulePath) + "/webapp";
+					if (config.webappPath.length() == 0) {
+						config.webappPath = utils::get_parent_directory(config.modulePath) + "/webapp";
 					}
 					webApplicationConfigs.insert(std::pair<const std::string, webappconfig>(webAppName, config));
 				}
@@ -151,12 +150,12 @@ namespace webmvcpp
 
 			for (std::map<std::string, webappconfig>::iterator cIt = webApplicationConfigs.begin(); cIt != webApplicationConfigs.end(); ++cIt)
 			{
-				webapplication_ptr mdl = load_application(cIt->second->modulePath.c_str(), cIt->second->webappPath.c_str(), cIt->second->staticPath.c_str());
+				webapplication_ptr mdl = load_application(cIt->second.modulePath.c_str(), cIt->second.webappPath.c_str(), cIt->second.staticPath.c_str());
 				if (mdl != NULL)
 				{
 					mdl->instance()->acceptCore(this);
 					webApps.insert(std::pair<std::string, webapplication_ptr>(cIt->first, mdl));
-					for (std::list<std::string>::iterator aliasesIt = cIt->second->aliases.begin(); aliasesIt != cIt->second->aliases.end(); ++aliasesIt)
+					for (std::list<std::string>::iterator aliasesIt = cIt->second.aliases.begin(); aliasesIt != cIt->second.aliases.end(); ++aliasesIt)
 					{
 						webApps.insert(std::pair<std::string, webapplication_ptr>(*aliasesIt, mdl));
 					}
