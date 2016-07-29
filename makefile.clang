@@ -9,7 +9,7 @@ INCLUDES = -I./src/3rdparty
 CC = clang
 CCC = clang++
 CFLAGS = -O3 -fPIC
-CCFLAGS = -O3 -std=c++11 -fPIC -Wall -Ofast -fno-rtti
+CCFLAGS = -O3 -std=c++11 -fPIC -Wall -Ofast -fno-rtti -march=native
 
 DESTDIR = /usr/local/bin
 
@@ -27,6 +27,7 @@ debug: default
 
 $(APPLICATION_NAME): $(OBJ)
 	$(CCC) -o ./$(APPLICATION_NAME) *.o -pthread -ldl
+	rm -rf *.o
 
 install:
 	@install -D ./$(APPLICATION_NAME) $(DESTDIR)
