@@ -119,6 +119,8 @@ namespace webmvcpp
 
 			for (std::list<std::string>::const_iterator it = entries.begin(); it != entries.end(); ++it)
 			{
+				std::map<std::string, request_model> reqModelMap;
+
 				const std::string & modelControllerName = *it;
 
 				std::ifstream controllerModel(path + "/" + modelControllerName, std::ios::in | std::ios::binary);
@@ -148,7 +150,6 @@ namespace webmvcpp
 						{
 							request_model reqModel;
 
-							const std::string & reModelIt = it.key();
 							const auto & reqModelObj = methodsIt.value();
 
 							for (json::const_iterator mdlIt = reqModelObj.begin(); mdlIt != reqModelObj.end(); ++mdlIt)
@@ -179,7 +180,7 @@ namespace webmvcpp
 								}
 							}
 
-							//reqModel.insert(std::pair<std::string, request_model>(reqTypeName, reqModel));
+							reqModelMap.insert(std::pair<std::string, request_model>(reqTypeName, reqModel));
 						}
 						else if (reqTypeName == "POST")
 						{
@@ -232,7 +233,7 @@ namespace webmvcpp
 								}
 							}
 
-							//reqModelMap.insert(std::pair<std::string, request_model>(reqTypeName, reqModel));
+							reqModelMap.insert(std::pair<std::string, request_model>(reqTypeName, reqModel));
 						}
 						else
 							continue;
@@ -240,7 +241,7 @@ namespace webmvcpp
 						std::ostringstream requestPath;
 						requestPath << "/" << modelControllerName << "/" << methodName;
 
-						//reqModels.insert(std::pair<std::string, std::map<std::string, request_model> >(requestPath.str(), reqModelMap));
+						reqModels.insert(std::pair<std::string, std::map<std::string, request_model> >(requestPath.str(), reqModelMap));
 					}
 				}
 			}
