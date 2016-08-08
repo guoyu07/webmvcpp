@@ -4,7 +4,7 @@ include sources.mk
 
 OBJ = $(SRC_FILES:.cpp=.o) $(SRC_FILES:.c=.o)
 
-INCLUDES = -I./src/3rdparty
+INCLUDES = -I./3rdparty
 
 CC = gcc
 CCC = g++

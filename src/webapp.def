@@ -1,6 +1,0 @@
-LIBRARY "webmvcpp_application"
-
-EXPORTS
-    webmvcpp_instance
-    init_module
-    deinit_module

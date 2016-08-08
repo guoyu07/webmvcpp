@@ -1,19 +1,6 @@
 #ifndef WEBMVCPP_SYSTEMUTILS_H
 #define WEBMVCPP_SYSTEMUTILS_H
 
-#if defined _WIN32
-#include <windows.h>
-#elif defined __linux
-#include <unistd.h>
-#include <pwd.h>
-#elif defined __APPLE__
-#include <stdio.h>
-#include <stdint.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/sysctl.h>
-#endif
-
 namespace webmvcpp
 {
 	struct systemutils {
@@ -140,12 +127,12 @@ namespace webmvcpp
 
 #elif defined (__APPLE__)
 
-			char str[256];
+			char str[256] = {0};
 			size_t size = sizeof(str);
-			int ret = sysctlbyname("kern.osrelease", str, &size, NULL, 0);
+			sysctlbyname("kern.osrelease", str, &size, NULL, 0);
 			std::istringstream kernelRelease(str);
 
-			int kernelMajorVesion;
+			int kernelMajorVesion = 0;
 			kernelRelease >> kernelMajorVesion;
 
 

@@ -28,7 +28,7 @@
 #include <codecvt>
 
 #include <winsock.h>
-#include "3rdparty/dirent_win32.h"
+#include "dirent_win32.h"
 #else
 #include <dlfcn.h>
 #include <pthread.h>
@@ -42,10 +42,17 @@
 #endif
 
 #ifdef __linux
+#include <unistd.h>
+#include <pwd.h>
 #include <sys/auxv.h>
 #endif 
 
 #ifdef __APPLE__
+#include <stdio.h>
+#include <stdint.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/sysctl.h>
 #include <CoreServices/CoreServices.h>
 #include <mach-o/dyld.h> 
 #endif
@@ -58,15 +65,17 @@
 #define min(a,b) (((a) < (b)) ? (a) : (b))
 #endif
 
-#include "3rdparty/boost/intrusive_ptr.hpp"
+#include "boost/intrusive_ptr.hpp"
 
-#include "3rdparty/http_parser/http_parser.h"
-#include "3rdparty/multipart_parser/multipart_parser.h"
-#include "3rdparty/json.hpp"
-#include "3rdparty/pugixml/pugixml.hpp"
-#include "3rdparty/md5/md5.h"
+#include "http_parser/http_parser.h"
+#include "multipart_parser/multipart_parser.h"
+#include "json.hpp"
+#include "pugixml/pugixml.hpp"
+#include "md5/md5.h"
 
 using namespace nlohmann;
+
+#include "buildinfo.h"
 
 #include "utils.h"
 #include "systemutils.h"
@@ -106,6 +115,7 @@ namespace webmvcpp
 
 #include "variant.h"
 #include "errorpage.h"
+#include "applicationbuilder.h"
 #include "multipartparser.h"
 #include "handlers.h"
 #include "requestmodel.h"
@@ -117,4 +127,6 @@ namespace webmvcpp
 
 
 #include "applicationloader.h"
+#include "connectionthread.h"
+#include "server.h"
 #include "webmvcppcore.h"

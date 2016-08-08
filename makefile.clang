@@ -4,7 +4,7 @@ OBJ = $(SRC_FILES:.c=.o) $(SRC_FILES:.cpp=.o)
 
 APPLICATION_NAME = webmvcpp
 
-INCLUDES = -I./src/3rdparty
+INCLUDES = -I./3rdparty
 
 CC = clang
 CCC = clang++

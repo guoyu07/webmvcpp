@@ -2,13 +2,6 @@
 #define WEBMVCPP_CORE_H
 
 
-#include "connectionthread.h"
-#include "server.h"
-#include "requestmanager.h"
-#include "sessionmanager.h"
-#include "applicationloader.h"
-
-
 namespace webmvcpp
 {   
     class application;

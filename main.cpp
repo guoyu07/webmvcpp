@@ -16,7 +16,7 @@ int main(int argc, char *args[])
 		const char *argument = args[i];
 		if (strcmp(argument, "-v") == 0 || strcmp(argument, "--version") == 0)
 		{
-			std::cout << "webmvc++ version: " << "0" << std::endl;
+			std::cout << "WebMVC++ Open Source Web Application Engine\nVersion: 0.1." << WEBMVCPP_BUILD_NUMBER << std::endl;
 		}
 		else if (strcmp(argument, "-d") == 0 || strcmp(argument, "--daemon") == 0)
 		{

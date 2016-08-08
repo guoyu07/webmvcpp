@@ -1,9 +1,6 @@
 #ifndef WEBMVCPP_MIMETYPES_H
 #define WEBMVCPP_MIMETYPES_H
 
-#include <string>
-#include <map>
-
 namespace webmvcpp
 {
     struct mime_file_types

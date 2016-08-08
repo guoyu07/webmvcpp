@@ -3,7 +3,7 @@
 
 APPLICATION_NAME = webmvcpp.exe
 
-INCLUDES = ./src/3rdparty
+INCLUDES = ./3rdparty
 
 CFLAGS = /Ox
 CPPFLAGS = /EHsc /Ox
