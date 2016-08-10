@@ -60,7 +60,7 @@ namespace webmvcpp
 			return mainContent.str();
 		}
 
-		static std::string generateApplicationMainContent(const char* applicationName)
+		static std::string generateApplicationDef(const char* applicationName)
 		{
 			std::ostringstream defContent;
 
@@ -71,7 +71,7 @@ namespace webmvcpp
 			defContent << "	init_module" << std::endl;
 			defContent << "	deinit_module" << std::endl;
 
-			return defContent;
+			return defContent.str();
 		}
 
 	};

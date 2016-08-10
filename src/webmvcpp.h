@@ -24,9 +24,11 @@
 
 #include <limits.h>
 
+#include <sys/types.h>
+#include <sys/stat.h>
+
 #ifdef _WIN32
 #include <codecvt>
-
 #include <winsock.h>
 #include "dirent_win32.h"
 #else
@@ -34,8 +36,6 @@
 #include <pthread.h>
 #include <sys/socket.h>
 #include <unistd.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <dirent.h>

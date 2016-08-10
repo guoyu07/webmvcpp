@@ -55,8 +55,10 @@ namespace webmvcpp
 				return;
 			}
 
+
+			struct stat info;
 			std::ifstream fs(filePath, std::ios::in | std::ios::binary);
-			if (!fs.is_open())
+			if (stat(filePath.c_str(), &info) != 0 || info.st_mode & S_IFDIR || !fs.is_open())
 			{
 				response.status = "404 Not found";
 				response.contentType = "text/html";
