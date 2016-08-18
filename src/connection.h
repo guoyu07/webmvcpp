@@ -13,6 +13,12 @@ namespace webmvcpp
 		socketDescriptor(socket),
 		mvcCore(c)
 		{
+			recvDataFlags = 0;
+#ifdef _WIN32
+			sendDataFlags = 0;
+#else
+			sendDataFlags = MSG_NOSIGNAL;
+#endif		
 			recvBuffer.resize(16 * 1024);
 		}
 
@@ -37,7 +43,7 @@ namespace webmvcpp
 				{
 					request.isKeepAlive = false;
 					const char *fatalErrorMessage = "HTTP/1.1 200 OK\r\nConnection: close\r\n\r\n<h3>Internal server error</h3><p>WebMVCpp - Your C++ MVC Web Engine</p>";
-					send(socketDescriptor, fatalErrorMessage, strlen(fatalErrorMessage), 0);
+					::send(socketDescriptor, fatalErrorMessage, strlen(fatalErrorMessage), sendDataFlags);
 					break;
 				}
 			} while (request.isKeepAlive);
@@ -51,7 +57,7 @@ namespace webmvcpp
 
         void end_response()
 		{
-			::send(socketDescriptor, "0\r\n\r\n", 5, 0);
+			::send(socketDescriptor, "0\r\n\r\n", 5, sendDataFlags);
 		}
 
 
@@ -64,7 +70,7 @@ namespace webmvcpp
 
 			streamData.resize(64 * 1024);
 
-			recv(socketDescriptor, (char *)&streamData.front(), streamData.size(), 0);
+			::recv(socketDescriptor, (char *)&streamData.front(), streamData.size(), recvDataFlags);
 
 			return readyRead;
 		}
@@ -96,7 +102,7 @@ namespace webmvcpp
 				if (!readyRead)
 					return false;
 
-				int rcvBytes = recv(socketDescriptor, (char *)&recvBuffer.front(), recvBuffer.size(), 0);
+				int rcvBytes = ::recv(socketDescriptor, (char *)&recvBuffer.front(), recvBuffer.size(), recvDataFlags);
 				if (rcvBytes == 0 || rcvBytes == -1)
 					return false;
 
@@ -115,7 +121,7 @@ namespace webmvcpp
 				if (!readyRead)
 					return false;
 
-				int rcvBytes = recv(socketDescriptor, (char *)&recvBuffer.front(), recvBuffer.size(), 0);
+				int rcvBytes = ::recv(socketDescriptor, (char *)&recvBuffer.front(), recvBuffer.size(), recvDataFlags);
 				if (rcvBytes == 0 || rcvBytes == -1)
 					return false;
 
@@ -145,7 +151,7 @@ namespace webmvcpp
 				os << "Connection: Close\r\n";
 			os << "\r\n";
 
-			::send(socketDescriptor, os.str().c_str(), os.str().length(), 0);
+			::send(socketDescriptor, os.str().c_str(), os.str().length(), sendDataFlags);
 		}
 
 		void
@@ -174,9 +180,9 @@ namespace webmvcpp
 					hexStrm << std::hex << rSize << "\r\n";
 					std::string hexStr = hexStrm.str();
 
-					::send(socketDescriptor, hexStr.c_str(), hexStr.length(), 0);
-					::send(socketDescriptor, (const char *)&fileBuffer.front(), (int)rSize, 0);
-					::send(socketDescriptor, "\r\n", 2, 0);
+					::send(socketDescriptor, hexStr.c_str(), hexStr.length(), sendDataFlags);
+					::send(socketDescriptor, (const char *)&fileBuffer.front(), (int)rSize, sendDataFlags);
+					::send(socketDescriptor, "\r\n", 2, sendDataFlags);
 
 					rPos += rSize;
 				}
@@ -203,9 +209,9 @@ namespace webmvcpp
 				hexStrm << std::hex << rSize << "\r\n";
 				std::string hexStr = hexStrm.str();
 
-				send(socketDescriptor, hexStr.c_str(), hexStr.length(), 0);
-				send(socketDescriptor, (const char *)&fileBuffer.front(), (int)rSize, 0);
-				send(socketDescriptor, "\r\n", 2, 0);
+				::send(socketDescriptor, hexStr.c_str(), hexStr.length(), sendDataFlags);
+				::send(socketDescriptor, (const char *)&fileBuffer.front(), (int)rSize, sendDataFlags);
+				::send(socketDescriptor, "\r\n", 2, sendDataFlags);
 
 				rPos += rSize;
 			}
@@ -225,9 +231,9 @@ namespace webmvcpp
 				hexStrm << std::hex << cFragmentLength << "\r\n";
 				std::string hexStr = hexStrm.str();
 
-				send(socketDescriptor, hexStr.c_str(), hexStr.length(), 0);
-				send(socketDescriptor, (const char *)&bytes.front() + cPtr, cFragmentLength, 0);
-				send(socketDescriptor, "\r\n", 2, 0);
+				::send(socketDescriptor, hexStr.c_str(), hexStr.length(), sendDataFlags);
+				::send(socketDescriptor, (const char *)&bytes.front() + cPtr, cFragmentLength, sendDataFlags);
+				::send(socketDescriptor, "\r\n", 2, sendDataFlags);
 
 				cPtr += cFragmentLength;
 			}
@@ -247,9 +253,9 @@ namespace webmvcpp
 				hexStrm << std::hex << cFragmentLength << "\r\n";
 				std::string hexStr = hexStrm.str();
 
-				send(socketDescriptor, hexStr.c_str(), hexStr.length(), 0);
-				send(socketDescriptor, (const char *)text.c_str() + cPtr, cFragmentLength, 0);
-				send(socketDescriptor, "\r\n", 2, 0);
+				::send(socketDescriptor, hexStr.c_str(), hexStr.length(), sendDataFlags);
+				::send(socketDescriptor, (const char *)text.c_str() + cPtr, cFragmentLength, sendDataFlags);
+				::send(socketDescriptor, "\r\n", 2, sendDataFlags);
 
 				cPtr += cFragmentLength;
 			}
@@ -270,6 +276,9 @@ namespace webmvcpp
         std::vector<unsigned char> recvBuffer;
 
 		core_prototype *mvcCore;
+
+		int sendDataFlags;
+		int recvDataFlags;
     };
 }
 
