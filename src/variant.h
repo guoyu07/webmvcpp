@@ -3,7 +3,7 @@
 
 namespace webmvcpp
 {
-    class variant_impl : public webmvcobject
+    class variant_impl
     {
         std::vector<unsigned char> valueBuffer;
 
@@ -289,6 +289,8 @@ namespace webmvcpp
             valueBuffer.resize(sizeof(T));
             memcpy(&valueBuffer.front(), &val, sizeof(T));
         }
+
+		unsigned long reference = 0;
     };
 
 	class variant

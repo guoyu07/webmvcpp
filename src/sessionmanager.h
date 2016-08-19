@@ -3,13 +3,12 @@
 
 namespace webmvcpp
 {
-    struct session_impl : public webmvcobject
+    struct session_impl
 	{
     private:
         session_impl();
     public:
         session_impl(const std::string & key):
-        webmvcobject(),
 		createTime(std::time(0)),
 		lastReqTime(std::time(0))
 		{
@@ -34,6 +33,7 @@ namespace webmvcpp
             return data[idx];
         }
 
+		unsigned long reference = 0;
 	private:
 		std::mutex lock;
 

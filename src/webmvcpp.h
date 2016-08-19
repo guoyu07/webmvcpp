@@ -87,17 +87,6 @@ using namespace nlohmann;
 
 namespace webmvcpp
 {
-    class webmvcobject
-    {
-    public:
-		webmvcobject():
-        reference(0)
-        {}
-        virtual ~webmvcobject()
-        {}
-        unsigned long reference;
-    };
-
 	class core;
 	class http_server;
 	class http_connection;
@@ -129,4 +118,5 @@ namespace webmvcpp
 #include "applicationloader.h"
 #include "connectionthread.h"
 #include "server.h"
+#include "builder.h"
 #include "webmvcppcore.h"

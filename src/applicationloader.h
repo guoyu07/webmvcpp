@@ -12,11 +12,10 @@ namespace webmvcpp
         typedef void(*deinitModuleFn)();
     }
 
-    class webapplication : public webmvcobject
+    class webapplication
     {
     public:
-		webapplication(const char *mdlPath, const char *appPath, const char *staticPath) :
-		webmvcobject()
+		webapplication(const char *mdlPath, const char *appPath, const char *staticPath)
 		{
 #ifdef _WIN32
 			moduleInstance = ::LoadLibraryA(mdlPath);
@@ -53,6 +52,7 @@ namespace webmvcpp
 			return appInstance;
 		}
 
+		unsigned long reference = 0;
 
     private:
 		void *

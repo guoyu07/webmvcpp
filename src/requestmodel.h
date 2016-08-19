@@ -11,7 +11,7 @@ namespace webmvcpp
     #define MVCPP_MODEL_KEY_BODY_ENCODED_PARAMS "body_encoded_params"
     #define MVCPP_MODEL_KEY_QUERY_STRING "query_string"
 
-    class request_model : public webmvcobject
+    class request_model
     {
     public:
         request_model(){}
