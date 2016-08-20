@@ -104,7 +104,6 @@ namespace webmvcpp
 
 #include "variant.h"
 #include "errorpage.h"
-#include "applicationbuilder.h"
 #include "multipartparser.h"
 #include "handlers.h"
 #include "requestmodel.h"

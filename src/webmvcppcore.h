@@ -143,8 +143,11 @@ namespace webmvcpp
 
 			for (std::map<std::string, webappconfig>::iterator cIt = webApplicationConfigs.begin(); cIt != webApplicationConfigs.end(); ++cIt)
 			{
+				if (cIt->second.modulePath.length() == 0)
+					continue;
+
 				webapplication_ptr mdl = load_application(cIt->second.modulePath.c_str(), cIt->second.webappPath.c_str(), cIt->second.staticPath.c_str());
-				if (mdl != NULL)
+				if (mdl->instance() != NULL)
 				{
 					mdl->instance()->acceptCore(this);
 					webApps.insert(std::pair<std::string, webapplication_ptr>(cIt->first, mdl));
@@ -200,8 +203,72 @@ namespace webmvcpp
 
 			return true;
 		}
+		void build_applications()
+		{
+			for (std::map<std::string, webappconfig>::iterator cIt = webApplicationConfigs.begin(); cIt != webApplicationConfigs.end(); ++cIt) 
+			{
+				if (cIt->second.modulePath.length() == 0 && cIt->second.webappPath.length() != 0)
+				{
+					std::string buildedAppPath;
+					if (build_application(cIt->second.webappPath, buildedAppPath)) {
+						cIt->second.modulePath = buildedAppPath;
+					}
+				}
+			}
+		}
 
 	private:
+		bool build_application(const std::string & webAppPath, std::string & resultPath)
+		{
+			std::list<std::string> sourcefiles;
+
+			DIR *webappDir = opendir(webAppPath.c_str());
+			if (!webappDir)
+				return false;
+
+			while (dirent *entry = readdir(webappDir))
+			{
+				if (entry->d_type == DT_REG)
+					sourcefiles.push_back(webAppPath + "/" + entry->d_name);
+			}
+			closedir(webappDir);
+
+			std::string controllersPath = webAppPath + "/controllers";
+
+			DIR *controllersDir = opendir(controllersPath.c_str());
+			if (!controllersDir)
+				return false;
+
+			while (dirent *entry = readdir(controllersDir))
+			{
+				if (entry->d_type == DT_REG)
+					sourcefiles.push_back(controllersPath + "/" + entry->d_name);
+			}
+			closedir(controllersDir);
+
+			builder webAppbuilder;
+			std::list<std::string> objFiles;
+
+			for (std::list<std::string>::iterator sourceIt = sourcefiles.begin(); sourceIt != sourcefiles.end(); ++sourceIt) {
+				
+				std::string result;
+				std::string tmpObjName = tmpnam(NULL);
+				if (!webAppbuilder.compile(*sourceIt, tmpObjName, result)) {
+					return false;
+				}
+
+				objFiles.push_back(tmpObjName);
+			}
+
+			std::string linkAppResult;
+			std::string tmpWebAppFile = tmpnam(NULL);
+			bool buildResult = webAppbuilder.linkApplication(objFiles, tmpWebAppFile, linkAppResult);
+			if (buildResult)
+				resultPath = tmpWebAppFile;
+
+			return buildResult;
+		}
+
 		bool start_daemon(int argc, char *args[])
 		{
 #if defined (_WIN32)
@@ -250,7 +317,7 @@ namespace webmvcpp
 			return true;
 		}
 #if defined (_WIN32)
-		static void WINAPI core::service_ctrl_handler(DWORD ctrlCode)
+		static void WINAPI service_ctrl_handler(DWORD ctrlCode)
 		{
 			switch (ctrlCode)
 			{
@@ -275,7 +342,7 @@ namespace webmvcpp
 			}
 		}
 
-		static VOID WINAPI core::service_main(DWORD argc, LPTSTR *argv)
+		static VOID WINAPI service_main(DWORD argc, LPTSTR *argv)
 		{
 			DWORD status = E_FAIL;
 

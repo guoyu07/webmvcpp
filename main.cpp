@@ -37,6 +37,8 @@ int main(int argc, char *args[])
 		return -2;
 	}
 
+	mvccore.build_applications();
+	
 	if (mvccore.start(startAsDaemon, argc, args))
 	{
 		return -3;
