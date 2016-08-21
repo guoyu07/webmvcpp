@@ -31,11 +31,15 @@ namespace webmvcpp
 		sessionManager(),
 		httpServer(this)
 		{
+			startTimestamp = std::time(NULL);
+			srand((unsigned int)std::time(NULL));
 #if defined (_WIN32)
 			WSADATA wsaData;
 			WSAStartup(MAKEWORD(2, 2), &wsaData);
 #endif
 		}
+
+		const time_t get_start_timestamp() { return startTimestamp; }
 
 		static const char *get_service_name() { return "webmvcpp_service"; }
 
@@ -210,7 +214,7 @@ namespace webmvcpp
 				if (cIt->second.modulePath.length() == 0 && cIt->second.webappPath.length() != 0)
 				{
 					std::string buildedAppPath;
-					if (build_application(cIt->second.webappPath, buildedAppPath)) {
+					if (build_application(cIt->first, cIt->second.webappPath, buildedAppPath)) {
 						cIt->second.modulePath = buildedAppPath;
 					}
 				}
@@ -218,7 +222,7 @@ namespace webmvcpp
 		}
 
 	private:
-		bool build_application(const std::string & webAppPath, std::string & resultPath)
+		bool build_application(const std::string & appName, std::string & webAppPath, std::string & resultPath)
 		{
 			std::list<std::string> sourcefiles;
 
@@ -228,8 +232,15 @@ namespace webmvcpp
 
 			while (dirent *entry = readdir(webappDir))
 			{
-				if (entry->d_type == DT_REG)
-					sourcefiles.push_back(webAppPath + "/" + entry->d_name);
+				if (entry->d_type == DT_REG) {
+
+					std::vector<std::string> splittedFile = utils::split_string(entry->d_name, '.');
+					if (splittedFile.size() < 2)
+						continue;
+					std::string fileExtension = splittedFile[splittedFile.size() - 1];
+					if (fileExtension == "cpp" || fileExtension == "c")
+						sourcefiles.push_back(webAppPath + "/" + entry->d_name);
+				}
 			}
 			closedir(webappDir);
 
@@ -241,12 +252,19 @@ namespace webmvcpp
 
 			while (dirent *entry = readdir(controllersDir))
 			{
-				if (entry->d_type == DT_REG)
-					sourcefiles.push_back(controllersPath + "/" + entry->d_name);
+				if (entry->d_type == DT_REG) {
+					
+					std::vector<std::string> splittedFile = utils::split_string(entry->d_name, '.');
+					if (splittedFile.size() < 2)
+						continue;
+					std::string fileExtension = splittedFile[splittedFile.size() - 1];
+					if (fileExtension == "cpp" || fileExtension == "c")
+						sourcefiles.push_back(controllersPath + "/" + entry->d_name);
+				}
 			}
 			closedir(controllersDir);
 
-			builder webAppbuilder;
+			builder webAppbuilder(appName, webAppPath);
 			std::list<std::string> objFiles;
 
 			for (std::list<std::string>::iterator sourceIt = sourcefiles.begin(); sourceIt != sourcefiles.end(); ++sourceIt) {
@@ -262,7 +280,15 @@ namespace webmvcpp
 
 			std::string linkAppResult;
 			std::string tmpWebAppFile = tmpnam(NULL);
+#if defined (_WIN32)
+			std::string defFile;
+			std::string tmpDefFile = tmpnam(NULL);
+			webAppbuilder.generateApplicationDef(tmpDefFile);
+			bool buildResult = webAppbuilder.linkApplication(objFiles, tmpDefFile, tmpWebAppFile, linkAppResult);
+			::DeleteFileA(tmpDefFile.c_str());
+#else
 			bool buildResult = webAppbuilder.linkApplication(objFiles, tmpWebAppFile, linkAppResult);
+#endif
 			if (buildResult)
 				resultPath = tmpWebAppFile;
 
@@ -420,6 +446,7 @@ namespace webmvcpp
 		unsigned short bindPort = 8080;
 		unsigned long maxFormContent = 1 * 1024 * 1024;
 
+		time_t startTimestamp;
         std::map<std::string, std::string> routeMap;
     };
 }

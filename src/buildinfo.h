@@ -1,4 +1,1 @@
-#define WEBMVCPP_BUILD_NUMBER 19
-#define WEBMVCPP_COMPILER_C "clang"
-#define WEBMVCPP_COMPILER_CPP "clang++"
-#define WEBMVCPP_LINKER "clang"
+#define WEBMVCPP_BUILD_NUMBER 

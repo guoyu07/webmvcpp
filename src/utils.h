@@ -23,14 +23,16 @@ namespace webmvcpp
 		}
 
 		static std::string get_parent_directory(const std::string & path) {
-#ifdef _WIN32
-			size_t pos = path.rfind("\\");
-#else
-			size_t pos = path.rfind("/");
-#endif
-			if (pos == std::string::npos)
+			size_t slpos = path.rfind("\\");
+			size_t bslpos = path.rfind("/");
+			if (bslpos == std::string::npos)
+				return std::string(path.c_str(), bslpos);
+			else if (slpos == std::string::npos)
+				return std::string(path.c_str(), slpos);
+			else
 				return "";
-			return std::string(path.c_str(), pos);
+
+			
 		}
 
 
