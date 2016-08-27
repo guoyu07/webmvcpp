@@ -7,4 +7,14 @@ echo|set /p= #define WEBMVCPP_COMPILER_CPP "cl" >> ./src/buildinfo.h
 echo. >> ./src/buildinfo.h
 echo|set /p= #define WEBMVCPP_LINKER "link" >> ./src/buildinfo.h
 echo. >> ./src/buildinfo.h
+cl build.cpp /EHsc /link /subsystem:CONSOLE
+build.exe
+@del build.exe
+@del build.obj
 nmake -f ./makefile.msvc
+@del webmvcpp_headers_hpp_amalgamation.c
+@del webmvcpp_sources_cpp_amalgamation.c
+@del webmvcpp_http_parser_c.c
+@del webmvcpp_http_parser_h.c
+@del webmvcpp_multipart_parser_c.c
+@del webmvcpp_multipart_parser_h.c

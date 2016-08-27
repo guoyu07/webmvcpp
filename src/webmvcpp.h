@@ -4,6 +4,9 @@
 
 #include "boost/intrusive_ptr.hpp"
 
+#if defined(_WIN32)
+#include "dirent_win32.h"
+#endif
 #include "http_parser/http_parser.h"
 #include "multipart_parser/multipart_parser.h"
 #include "json.hpp"

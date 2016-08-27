@@ -29,7 +29,6 @@
 #ifdef _WIN32
 #include <codecvt>
 #include <winsock.h>
-#include "dirent_win32.h"
 #else
 #include <dlfcn.h>
 #include <pthread.h>

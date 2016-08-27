@@ -57,6 +57,28 @@ namespace webmvcpp
 		}
 #endif
 
+		bool load_web_application(const std::string & name, const std::list<std::string> & aliases,const std::string & modulePath, const std::string & webAppPath, const std::string & staticPath)
+		{
+			std::cout << "load module: " << modulePath;
+			webapplication_ptr mdl = new webapplication(modulePath.c_str(), webAppPath.c_str(), staticPath.c_str());
+			if (mdl->instance() != NULL)
+			{
+				std::cout << " success" << std::endl;
+				mdl->instance()->acceptCore(this);
+				webApps.insert(std::pair<std::string, webapplication_ptr>(name, mdl));
+				for (std::list<std::string>::const_iterator aliasesIt = aliases.begin(); aliasesIt != aliases.end(); ++aliasesIt)
+				{
+					webApps.insert(std::pair<std::string, webapplication_ptr>(*aliasesIt, mdl));
+				}
+
+				return true;
+			}
+			else {
+				std::cout << " fail" << std::endl;
+			}
+
+			return false;
+		}
 
         bool init(const std::string & webapp)
 		{
@@ -150,16 +172,7 @@ namespace webmvcpp
 				if (cIt->second.modulePath.length() == 0)
 					continue;
 
-				webapplication_ptr mdl = load_application(cIt->second.modulePath.c_str(), cIt->second.webappPath.c_str(), cIt->second.staticPath.c_str());
-				if (mdl->instance() != NULL)
-				{
-					mdl->instance()->acceptCore(this);
-					webApps.insert(std::pair<std::string, webapplication_ptr>(cIt->first, mdl));
-					for (std::list<std::string>::iterator aliasesIt = cIt->second.aliases.begin(); aliasesIt != cIt->second.aliases.end(); ++aliasesIt)
-					{
-						webApps.insert(std::pair<std::string, webapplication_ptr>(*aliasesIt, mdl));
-					}
-				}
+				load_web_application(cIt->first, cIt->second.aliases, cIt->second.modulePath, cIt->second.webappPath, cIt->second.staticPath);
 			}
 
 			return true;
@@ -178,12 +191,6 @@ namespace webmvcpp
 
         void application_unload(application *mvcApp) {
 
-		}
-		webapplication_ptr load_application(const char *path, const char *webAppPath, const char *staticPath)
-		{
-			webapplication_ptr cli = new webapplication(path, webAppPath, staticPath);
-
-			return cli;
 		}
 
 		virtual mime_file_types *get_mime_types() { return &mimeTypes; }
@@ -209,12 +216,16 @@ namespace webmvcpp
 		}
 		void build_applications()
 		{
+
 			for (std::map<std::string, webappconfig>::iterator cIt = webApplicationConfigs.begin(); cIt != webApplicationConfigs.end(); ++cIt) 
 			{
 				if (cIt->second.modulePath.length() == 0 && cIt->second.webappPath.length() != 0)
 				{
 					std::string buildedAppPath;
+					std::cout << "build application: " << cIt->first << std::endl;
 					if (build_application(cIt->first, cIt->second.webappPath, buildedAppPath)) {
+						load_web_application(cIt->first, cIt->second.aliases, buildedAppPath, cIt->second.webappPath, cIt->second.staticPath);
+
 						cIt->second.modulePath = buildedAppPath;
 					}
 				}
@@ -224,6 +235,7 @@ namespace webmvcpp
 	private:
 		bool build_application(const std::string & appName, std::string & webAppPath, std::string & resultPath)
 		{
+			bool buildResult = true;
 			std::list<std::string> sourcefiles;
 
 			DIR *webappDir = opendir(webAppPath.c_str());
@@ -272,25 +284,49 @@ namespace webmvcpp
 				std::string result;
 				std::string tmpObjName = tmpnam(NULL);
 				if (!webAppbuilder.compile(*sourceIt, tmpObjName, result)) {
-					return false;
+					buildResult = false;
+					break;
 				}
 
 				objFiles.push_back(tmpObjName);
 			}
 
-			std::string linkAppResult;
-			std::string tmpWebAppFile = tmpnam(NULL);
+			if (buildResult) {
+				std::string linkAppResult;
+				std::string webAppFile = webAppPath + "/" + appName;
 #if defined (_WIN32)
-			std::string defFile;
-			std::string tmpDefFile = tmpnam(NULL);
-			webAppbuilder.generateApplicationDef(tmpDefFile);
-			bool buildResult = webAppbuilder.linkApplication(objFiles, tmpDefFile, tmpWebAppFile, linkAppResult);
-			::DeleteFileA(tmpDefFile.c_str());
+				webAppFile += ".dll";
+				std::string defFile;
+				std::string tmpDefFile = tmpnam(NULL);
+				webAppbuilder.generateApplicationDef(tmpDefFile);
+				buildResult = webAppbuilder.linkApplication(objFiles, tmpDefFile, webAppFile, linkAppResult);
+				::DeleteFileA(tmpDefFile.c_str());
 #else
-			bool buildResult = webAppbuilder.linkApplication(objFiles, tmpWebAppFile, linkAppResult);
+				webAppFile += ".so";
+				buildResult = webAppbuilder.linkApplication(objFiles, webAppFile, linkAppResult);
 #endif
-			if (buildResult)
-				resultPath = tmpWebAppFile;
+
+				for (std::list<std::string>::const_iterator objIt = objFiles.begin(); objIt != objFiles.end(); ++objIt)
+				{
+#if defined (_WIN32)
+					::DeleteFileA(objIt->c_str());
+#else
+					remove(objIt->c_str());
+#endif
+				}
+
+				if (buildResult)
+					resultPath = webAppFile;
+			}
+
+			for (std::list<std::string>::const_iterator objIt = objFiles.begin(); objIt != objFiles.end(); ++objIt)
+			{
+#if defined (_WIN32)
+				::DeleteFileA(objIt->c_str());
+#else
+				remove(objIt->c_str());
+#endif
+			}
 
 			return buildResult;
 		}
