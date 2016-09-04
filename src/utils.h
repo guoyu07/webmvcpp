@@ -74,6 +74,37 @@ namespace webmvcpp
 		}
 
 		static std::string
+		multiply_replace_string(std::string & content, const std::string & fragmentFrom1, const std::string & fragmentFrom2, const std::string & fragmentTo1, const std::string & fragmentTo2)
+		{
+			std::string result;
+
+			size_t prevPos = 0;
+			size_t curPos = 0;
+			while ((curPos = content.find(fragmentFrom1, prevPos)) != std::string::npos)
+			{
+				result += content.substr(prevPos, curPos - prevPos);
+				curPos += fragmentFrom1.length();
+
+				size_t endBlockPos = content.find(fragmentFrom2, curPos);
+				if (endBlockPos == std::string::npos)
+					break;
+
+				result += fragmentTo1 + content.substr(curPos, endBlockPos - curPos) + fragmentTo2;
+
+				endBlockPos += fragmentFrom2.length();
+				prevPos = endBlockPos;
+			}
+
+			unsigned int ctrlTempLength = content.length();
+			if (prevPos != ctrlTempLength) {
+				result += content.substr(prevPos, ctrlTempLength - prevPos);
+			}
+				
+
+			return result;
+		}
+
+		static std::string
 		multiply_replace_string(const std::string & content, const std::string & beginBlock, const std::string & endBlock, const std::map<std::string, std::string> & values)
 		{
 			std::string result;
@@ -103,7 +134,7 @@ namespace webmvcpp
 			}
 
 			unsigned int ctrlTempLength = content.length();
-			if (curPos != prevPos)
+			if (prevPos != ctrlTempLength)
 				result += content.substr(prevPos, ctrlTempLength - prevPos);
 
 			return result;
@@ -321,6 +352,28 @@ namespace webmvcpp
 					os << '%' << to_hex(*ci >> 4) << to_hex(*ci % 16);
 				}
 			}
+
+			return os.str();
+		}
+
+		static const std::string to_cHexString(const std::string & str)
+		{
+			std::ostringstream os;
+
+			os << "\"";
+
+			unsigned long numByte = 0;
+
+			for (std::string::const_iterator ci = str.begin(); ci != str.end(); ++ci) {
+				unsigned char oneChar = *ci;
+				os << "\\x" << to_hex(oneChar / 16) << to_hex(oneChar % 16);
+				++numByte %= 32;
+				if (numByte == 31) {
+					os << "\" \\" << std::endl << "    \"";
+				}
+			}
+
+			os << "\"";
 
 			return os.str();
 		}

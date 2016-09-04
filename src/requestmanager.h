@@ -214,7 +214,7 @@ namespace webmvcpp
 			std::string sessionId;
 
 			session sessionContext;
-
+			
 			if (sessionManager->isEnabled())
 			{
 				http_values::const_iterator itHeadeer = request.header.find("Cookie");
@@ -235,7 +235,7 @@ namespace webmvcpp
 
 				response.header.insert(std::pair<std::string, std::string>("Set-Cookie", sessionManager->make_cookie_value(sessionId)));
 			}
-
+			
 			std::map<std::string, std::map<std::string, request_model>> & reqModels = mvcapp->reqModels;
 			std::map<std::string, std::map<std::string, request_model> >::const_iterator reqModelIt = reqModels.find(request.path);
 			if (reqModelIt == reqModels.cend())
@@ -271,14 +271,14 @@ namespace webmvcpp
 				}
 
 			}
-
+			
 			std::map<std::string, webmvcpp_request_handler> & req = mvcapp->handlers->requests;
 			std::map<std::string, webmvcpp_request_handler>::const_iterator reqHandlerIt = req.find(request.path);
 			if (reqHandlerIt != req.end())
 			{
 				std::lock_guard<std::mutex> locker(sessionContext->get_lock());
 
-				if (reqHandlerIt->second(connection, request, response, sessionContext->get_data()))
+				if (!reqHandlerIt->second(connection, request, response, sessionContext->get_data(), viewData))
 				{
 					connection->send_response_header(response);
 					connection->send_response_content(response.content);
@@ -286,42 +286,32 @@ namespace webmvcpp
 					return;
 				}
 			}
+			
+			std::string pageContent;
 
-			std::map<std::string, std::string> & pages = mvcapp->pages;
-			std::map<std::string, std::string>::iterator pageIt = pages.find(request.path);
-			if (pageIt != pages.end())
+			if (mvcapp->handlers->masterPageHandler)
 			{
-				std::string pageContent = pageIt->second;
+				std::lock_guard<std::mutex> locker(sessionContext->get_lock());
 
-				if (mvcapp->handlers->masterPageHandler)
-				{
-					std::lock_guard<std::mutex> locker(sessionContext->get_lock());
-
-					mvcapp->handlers->masterPageHandler(connection, request, response, sessionContext->get_data(), viewData);
-				}
-
-				std::map<std::string, webmvcpp_view_handler> views = mvcapp->handlers->views;
-				std::map<std::string, webmvcpp_view_handler>::const_iterator contentHandlerIt = views.find(request.path);
-				if (contentHandlerIt != views.end())
-				{
-					std::lock_guard<std::mutex> locker(sessionContext->get_lock());
-
-					contentHandlerIt->second(connection, request, response, sessionContext->get_data(), viewData);
-				}
-
-				pageContent = utils::multiply_replace_string(pageContent, "<webmvcpp:viewdata:", " />", viewData);
-
-				connection->send_response_header(response);
-				connection->send_response_content(pageContent);
-
-				return;
+				mvcapp->handlers->masterPageHandler(connection, request, response, sessionContext->get_data(), viewData);
+			}
+			
+			std::map<std::string, webmvcpp_view_handler> views = mvcapp->handlers->views;
+			std::map<std::string, webmvcpp_view_handler>::const_iterator viewHandlerIt = views.find(request.path);
+			if (viewHandlerIt != views.end())
+			{
+				std::lock_guard<std::mutex> locker(sessionContext->get_lock());
+				pageContent = viewHandlerIt->second(connection, request, response, sessionContext->get_data(), viewData);
+			}
+			else {
+				response.status = "404 Not found";
+				pageContent = "<h2>404 Not Found</ h2>";
 			}
 
-			response.status = "404 Not found";
-			response.contentType = "text/html";
-
 			connection->send_response_header(response);
-			connection->send_response_content("<h2>404 Not Found</h2>");
+			connection->send_response_content(pageContent);
+
+			return;
 		}
 	private:
         core_prototype  *webMvcCore;

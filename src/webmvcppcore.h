@@ -238,9 +238,13 @@ namespace webmvcpp
 			bool buildResult = true;
 			std::list<std::string> sourcefiles;
 
+			builder webAppbuilder(appName, webAppPath);
+
 			DIR *webappDir = opendir(webAppPath.c_str());
 			if (!webappDir)
 				return false;
+
+			webAppbuilder.generateViews(webAppPath + "/webmvcpp_views.cpp");
 
 			while (dirent *entry = readdir(webappDir))
 			{
@@ -276,7 +280,6 @@ namespace webmvcpp
 			}
 			closedir(controllersDir);
 
-			builder webAppbuilder(appName, webAppPath);
 			std::list<std::string> objFiles;
 
 			for (std::list<std::string>::iterator sourceIt = sourcefiles.begin(); sourceIt != sourcefiles.end(); ++sourceIt) {
@@ -290,6 +293,12 @@ namespace webmvcpp
 
 				objFiles.push_back(tmpObjName);
 			}
+
+#if defined (_WIN32)
+			::DeleteFileA((webAppPath + "/webmvcpp_views.cpp").c_str());
+#else
+			remove((webAppPath + "/webmvcpp_views.cpp").c_str());
+#endif
 
 			if (buildResult) {
 				std::string linkAppResult;

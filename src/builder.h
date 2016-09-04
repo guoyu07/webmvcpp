@@ -147,6 +147,157 @@ namespace webmvcpp
 			ofs.close();
 		}
 
+		bool generateModels(const std::string & outputFile)
+		{
+		
+		}
+
+		bool generateControllers(const std::string & outputFile, const std::vector<std::string> & controllers)
+		{
+
+		}
+
+		bool generateViews(const std::string & outputFile)
+		{
+			std::ofstream viewsContent(outputFile, std::ofstream::out);
+			viewsContent << "#include \"" << applicationName << ".h\"" << std::endl;
+			viewsContent << "namespace webmvcpp" << std::endl;
+			viewsContent << "{" << std::endl << std::endl;
+			viewsContent << std::endl;
+
+			std::string viewsPath = webApplicationPath + "/views";
+
+			std::string masterpageContent;
+			std::ifstream masterPageFile(viewsPath + "/master.html");
+			if (!masterPageFile.is_open())
+				return false;
+
+			masterPageFile.seekg(0, std::ios::end);
+			std::streampos fileSize = masterPageFile.tellg();
+			masterPageFile.seekg(0, std::ios::beg);
+
+			masterpageContent.resize((unsigned int)fileSize);
+			masterPageFile.read(&masterpageContent[0], fileSize);
+
+			DIR *currentDir = opendir(viewsPath.c_str());
+			if (!currentDir)
+				return false;
+
+			std::list<std::string> entries;
+
+			while (dirent *entry = readdir(currentDir))
+			{
+				if (entry->d_type != DT_DIR || strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
+					continue;
+
+				std::string controller = entry->d_name;
+				std::string ctrlPath = viewsPath + "/" + controller;
+
+				DIR *ctrlDir = opendir(ctrlPath.c_str());
+				if (!ctrlDir)
+					continue;
+
+				while (dirent *ctrlEntry = readdir(ctrlDir))
+				{
+					if (ctrlEntry->d_type != DT_REG)
+						continue;
+
+					std::vector<std::string> splittedFileName = utils::split_string(ctrlEntry->d_name, '.');
+					if (splittedFileName.size() == 2 && splittedFileName.back() == "html")
+					{
+						std::string page = splittedFileName[0];
+						std::string pageUrl = std::string("/") + controller + "/" + page;
+						std::string viewFilePath = ctrlPath + "/" + ctrlEntry->d_name;
+
+						std::ifstream viewFile(viewFilePath);
+						if (!viewFile.is_open())
+							continue;
+						viewFile.seekg(0, std::ios::end);
+						std::streampos fileSize = viewFile.tellg();
+						viewFile.seekg(0, std::ios::beg);
+
+						std::string viewFilePageContent;
+						viewFilePageContent.resize((unsigned int)fileSize);
+						viewFile.read(&viewFilePageContent[0], fileSize);
+
+
+						std::map<std::string, std::string> pageBlocks;
+
+						for (size_t blockPos = viewFilePageContent.find(WEBMVC_VIEWDATA, 0); blockPos != std::string::npos; blockPos = viewFilePageContent.find(WEBMVC_VIEWDATA, blockPos))
+						{
+							blockPos += std::string(WEBMVC_VIEWDATA).length();
+
+							size_t endBlockNamePos = viewFilePageContent.find(WEBMVC_BLOCK_END, blockPos);
+							if (blockPos == std::string::npos)
+								break;
+
+							std::string pageBlockName = viewFilePageContent.substr(blockPos, endBlockNamePos - blockPos);
+							blockPos = endBlockNamePos + std::string(WEBMVC_BLOCK_END).length();
+
+							size_t endBlockBlockPos = viewFilePageContent.find(WEBMVC_VIEWDATA_CLOSED, blockPos);
+							std::string pageBlockContent = viewFilePageContent.substr(blockPos, endBlockBlockPos - blockPos);
+
+							pageBlocks.insert(std::pair<std::string, std::string>(pageBlockName, pageBlockContent));
+
+							blockPos = endBlockBlockPos + std::string(WEBMVC_CLOSEBLOCK_END).length();
+						}
+
+						std::string currentPageContent = masterpageContent;
+
+						currentPageContent = utils::multiply_replace_string(currentPageContent, WEBMVC_VIEWDATA, std::string(WEBMVC_CLOSEBLOCK_END), pageBlocks);
+
+						viewsContent << std::endl << "view_handler(" + controller + ", " + page + ", [](http_connection *connection, http_request & request, http_response & response, variant_map & session, mvc_view_data & viewData) -> std::string {" << std::endl;
+
+						viewsContent << "    std::ostringstream pageContent;" << std::endl;
+
+						currentPageContent = utils::multiply_replace_string(currentPageContent, "{$", "}", "{%= viewData[\"", "\"] %}");
+
+						size_t htmlBlockBegin = 0;
+						
+						for (size_t codeBlockPos = currentPageContent.find("{%", 0); codeBlockPos != std::string::npos; codeBlockPos = currentPageContent.find("{%", codeBlockPos))
+						{
+							codeBlockPos += 2; // "{%"
+
+							size_t endCodeBlockPos = currentPageContent.find("%}", codeBlockPos);
+							if (endCodeBlockPos == std::string::npos)
+								break;
+
+							std::string codeBlock = currentPageContent.substr(codeBlockPos, endCodeBlockPos - codeBlockPos);
+
+							codeBlockPos -= 2; // "{%"
+							endCodeBlockPos += 2; //"%}"						
+
+							viewsContent << "pageContent << " + utils::to_cHexString(currentPageContent.substr(htmlBlockBegin, codeBlockPos - htmlBlockBegin)) + "; " << std::endl;
+
+							codeBlockPos = endCodeBlockPos;
+							htmlBlockBegin = endCodeBlockPos; //"%}"
+
+							if (codeBlock.length() > 0 && codeBlock[0]=='=')
+								viewsContent << "pageContent << " + codeBlock.substr(1) + ";" << std::endl;
+							else
+								viewsContent << std::endl << codeBlock << ";" << std::endl;
+						}
+						
+						if (htmlBlockBegin != currentPageContent.length())
+							viewsContent << "pageContent << " + utils::to_cHexString(currentPageContent.substr(htmlBlockBegin)) + "; " << std::endl;
+						
+						viewsContent << "    return pageContent.str();" << std::endl;
+						viewsContent << "});" << std::endl;
+					}
+
+				}
+
+				closedir(ctrlDir);
+			}
+			closedir(currentDir);
+
+			viewsContent << std::endl << std::endl << "}";
+
+			viewsContent.close();
+
+			return true;
+		}
+
 		bool compile(const std::string & sourceFile, std::string & objFile, std::string & result)
 		{
 			std::vector<std::string> splittedFile = utils::split_string(sourceFile, '.');

@@ -13,8 +13,8 @@ namespace webmvcpp
 
     typedef bool (*webmvcpp_check_authorized_fn)(http_request & request, variant_map & session);
 
-    typedef bool (*webmvcpp_request_handler)(http_connection *connection, http_request & request, http_response & response, variant_map & session);
-    typedef bool (*webmvcpp_view_handler)(http_connection *connection, http_request & request, http_response & response, variant_map & session, mvc_view_data & viewData);
+    typedef bool (*webmvcpp_request_handler)(http_connection *connection, http_request & request, http_response & response, variant_map & session, mvc_view_data & viewData);
+    typedef std::string (*webmvcpp_view_handler)(http_connection *connection, http_request & request, http_response & response, variant_map & session, mvc_view_data & viewData);
 
     #define set_start_application_handler(fn) webmvcpp::gset_start_application_handler g_set_start_application_handler(fn);
 

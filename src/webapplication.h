@@ -14,7 +14,7 @@ namespace webmvcpp
 
         webmvcpp_check_authorized_fn checkAuthorized;
 
-        webmvcpp_view_handler masterPageHandler;
+		webmvcpp_request_handler masterPageHandler;
 
         std::map<std::string, webmvcpp_view_handler> views;
         std::map<std::string, webmvcpp_request_handler> requests;
@@ -54,14 +54,12 @@ namespace webmvcpp
 
 			this->init_models();
 			this->init_controllers();
-			this->init_pages();
 
 			return true;
 		}
 
         mvc_handlers *handlers = mvc_handlers::global();
 
-        std::map<std::string, std::string> pages;
         std::set<std::string> controllers;
         std::map<std::string, std::map<std::string, request_model>> reqModels;
         
@@ -81,22 +79,6 @@ namespace webmvcpp
 		{
 			response.status = "302 found";
 			response.header.insert(std::pair<std::string, std::string>("Location", url));
-
-			return true;
-		}
-
-        virtual bool get_masterpage(std::string & pageFile)
-		{
-			std::ifstream masterPageFile(webappPath + "/views/master.html");
-			if (!masterPageFile.is_open())
-				return false;
-
-			masterPageFile.seekg(0, std::ios::end);
-			std::streampos fileSize = masterPageFile.tellg();
-			masterPageFile.seekg(0, std::ios::beg);
-
-			pageFile.resize((unsigned int)fileSize);
-			masterPageFile.read(&pageFile[0], fileSize);
 
 			return true;
 		}
@@ -277,94 +259,6 @@ namespace webmvcpp
 			return true;
 		}
 
-		bool init_pages()
-		{
-			std::string path = webappPath + "/views";
-
-			std::map<std::string, std::string> pagesContent;
-
-			std::string pageContent;
-			get_masterpage(pageContent);
-
-			DIR *currentDir = opendir(path.c_str());
-			if (!currentDir)
-				return false;
-
-			std::list<std::string> entries;
-
-			while (dirent *entry = readdir(currentDir))
-			{
-				if (entry->d_type != DT_DIR || strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
-					continue;
-
-				std::string controller = entry->d_name;
-				std::string ctrlPath = path + "/" + controller;
-
-				DIR *ctrlDir = opendir(ctrlPath.c_str());
-				if (!ctrlDir)
-					continue;
-
-				while (dirent *ctrlEntry = readdir(ctrlDir))
-				{
-					if (ctrlEntry->d_type != DT_REG)
-						continue;
-
-					std::vector<std::string> splittedFileName = utils::split_string(ctrlEntry->d_name, '.');
-					if (splittedFileName.size() == 2 && splittedFileName.back() == "html")
-					{
-						std::string pageUrl = std::string("/") + controller + "/" + splittedFileName[0];
-						std::string viewFilePath = ctrlPath + "/" + ctrlEntry->d_name;
-
-						std::ifstream viewFile(viewFilePath);
-						if (!viewFile.is_open())
-							continue;
-						viewFile.seekg(0, std::ios::end);
-						std::streampos fileSize = viewFile.tellg();
-						viewFile.seekg(0, std::ios::beg);
-
-						std::string viewFilePageContent;
-						viewFilePageContent.resize((unsigned int)fileSize);
-						viewFile.read(&viewFilePageContent[0], fileSize);
-
-
-						std::map<std::string, std::string> pageBlocks;
-
-						for (size_t blockPos = viewFilePageContent.find(WEBMVC_VIEWDATA, 0); blockPos != std::string::npos; blockPos = viewFilePageContent.find(WEBMVC_VIEWDATA, blockPos))
-						{
-							blockPos += std::string(WEBMVC_VIEWDATA).length();
-
-							size_t endBlockNamePos = viewFilePageContent.find(WEBMVC_BLOCK_END, blockPos);
-							if (blockPos == std::string::npos)
-								break;
-
-							std::string pageBlockName = viewFilePageContent.substr(blockPos, endBlockNamePos - blockPos);
-							blockPos = endBlockNamePos + std::string(WEBMVC_BLOCK_END).length();
-
-							size_t endBlockBlockPos = viewFilePageContent.find(WEBMVC_VIEWDATA_CLOSED, blockPos);
-							std::string pageBlockContent = viewFilePageContent.substr(blockPos, endBlockBlockPos - blockPos);
-
-							pageBlocks.insert(std::pair<std::string, std::string>(pageBlockName, pageBlockContent));
-
-							blockPos = endBlockBlockPos + std::string(WEBMVC_CLOSEBLOCK_END).length();
-						}
-
-						std::string currentPageContent = pageContent;
-
-						currentPageContent = utils::multiply_replace_string(currentPageContent, WEBMVC_VIEWDATA, std::string(WEBMVC_CLOSEBLOCK_END), pageBlocks);
-
-						pagesContent.insert(std::pair<std::string, std::string>(pageUrl, currentPageContent));
-					}
-
-				}
-
-				closedir(ctrlDir);
-			}
-			closedir(currentDir);
-
-			this->pages = pagesContent;
-
-			return true;
-		}
 	private:
 
     };
@@ -424,7 +318,7 @@ namespace webmvcpp
     {
         gset_master_page_handler();
     public:
-        gset_master_page_handler(webmvcpp_view_handler fn)
+        gset_master_page_handler(webmvcpp_request_handler fn)
         {
             webmvcpp::mvc_handlers::global()->masterPageHandler = fn;
         }
