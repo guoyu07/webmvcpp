@@ -216,7 +216,6 @@ namespace webmvcpp
 		}
 		void build_applications()
 		{
-
 			for (std::map<std::string, webappconfig>::iterator cIt = webApplicationConfigs.begin(); cIt != webApplicationConfigs.end(); ++cIt) 
 			{
 				if (cIt->second.modulePath.length() == 0 && cIt->second.webappPath.length() != 0)
@@ -224,10 +223,23 @@ namespace webmvcpp
 					std::string buildedAppPath;
 					std::cout << "build application: " << cIt->first << std::endl;
 					if (build_application(cIt->first, cIt->second.webappPath, buildedAppPath)) {
-						load_web_application(cIt->first, cIt->second.aliases, buildedAppPath, cIt->second.webappPath, cIt->second.staticPath);
-
 						cIt->second.modulePath = buildedAppPath;
+						std::cout << "application module: " << buildedAppPath << std::endl;
 					}
+				}
+			}
+		}
+
+		void load_applications()
+		{
+			for (std::map<std::string, webappconfig>::iterator cIt = webApplicationConfigs.begin(); cIt != webApplicationConfigs.end(); ++cIt)
+			{
+				if (cIt->second.modulePath.length() != 0 && cIt->second.webappPath.length() != 0)
+				{
+					std::string buildedAppPath;
+					std::cout << "load application: " << cIt->first << std::endl;
+
+					load_web_application(cIt->first, cIt->second.aliases, cIt->second.modulePath, cIt->second.webappPath, cIt->second.staticPath);
 				}
 			}
 		}

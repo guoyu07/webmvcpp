@@ -4,27 +4,47 @@ int main(int argc, char *args[])
 {
 	if (argc<2)
 	{
-		std::cout << "Use parameners:" << std::endl << "    -d, --daemon\t\t Run as daemon" << std::endl << "    -v, --version\t\t Print version" << std::endl;
+
+	}
+
+	bool startAsDaemon = false;
+	bool buildOnly = false;
+	std::string webApp;
+
+	if (argc == 1) {
+		std::cout << "Use parameners:" << std::endl;
+		std::cout << "    -d, --daemon\t\t Run as daemon" << std::endl;
+		std::cout << "    -b, --build\t\t Build web application, arguments: <.webmvcpp file>" << std::endl;
+		std::cout << "    -c, --create\t\t Create new web application, arguments: <name>" << std::endl;
+		std::cout << "    -v, --version\t\t Print version" << std::endl;
 
 		return -1;
 	}
 
-	bool startAsDaemon = false;
-	std::string webApp;
-	for (int i = 1; i < argc; ++i)
+	for (unsigned int i = 0; i < argc; ++i)
 	{
-		const char *argument = args[i];
-		if (strcmp(argument, "-v") == 0 || strcmp(argument, "--version") == 0)
+		char *p = args[i];
+
+		if (strcmp(p, "-v") == 0 || strcmp(p, "--version") == 0)
 		{
 			std::cout << "WebMVC++ Open Source Web Application Engine\nVersion: 0.3." << WEBMVCPP_BUILD_NUMBER << std::endl;
 		}
-		else if (strcmp(argument, "-d") == 0 || strcmp(argument, "--daemon") == 0)
+		else if (strcmp(p, "-d") == 0 || strcmp(p, "--daemon") == 0)
 		{
 			startAsDaemon = true;
 			std::cout << "Run webmvc++ as daemon." << std::endl;
 		}
+		else if ((strcmp(p, "-b") == 0 || strcmp(p, "--build") == 0) && i + 1 < argc)
+		{
+			buildOnly = true;
+		}
+		else if ((strcmp(p, "-c") == 0 || strcmp(p, "--create") == 0) && i + 1 < argc)
+		{
+			std::string appName = args[i + 1];
+
+		}
 		else {
-			webApp = argument;
+			webApp = p;
 		}
 	}
 
@@ -39,6 +59,11 @@ int main(int argc, char *args[])
 
 	mvccore.build_applications();
 	
+	if (buildOnly)
+		return 0;
+
+	mvccore.load_applications();
+
 	if (mvccore.start(startAsDaemon, argc, args))
 	{
 		return -3;
