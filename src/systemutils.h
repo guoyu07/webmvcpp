@@ -166,6 +166,15 @@ namespace webmvcpp
 			case 13:
 				osNameValue += "Mavericks";
 				break;
+			case 14:
+				osNameValue += "Yosemite";
+				break;
+			case 15:
+				osNameValue += "El Capitan";
+				break;
+			case 15:
+				osNameValue += "Sierra";
+				break;
 			default:
 				osNameValue += "Unknown";
 			}
