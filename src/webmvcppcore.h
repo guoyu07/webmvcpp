@@ -98,7 +98,8 @@ namespace webmvcpp
 			configString.resize((unsigned int)length);
 			configFile.read(&configString[0], length);
 
-			const auto configRoot = json::parse(configString);
+			const auto configRoot = json::parse(configString.c_str());
+
 			const json::const_iterator projectNameIt = configRoot.find("projectName");
 			if (projectNameIt != configRoot.end()) {
 				const auto projectValue = projectNameIt.value();
@@ -257,6 +258,8 @@ namespace webmvcpp
 				return false;
 
 			webAppbuilder.generateViews(webAppPath + "/webmvcpp_views.cpp");
+			webAppbuilder.generateModels (webAppPath + "/webmvcpp_models.cpp");
+			webAppbuilder.generateControllers(webAppPath + "/webmvcpp_controllers.cpp");
 
 			while (dirent *entry = readdir(webappDir))
 			{
@@ -307,9 +310,9 @@ namespace webmvcpp
 			}
 
 #if defined (_WIN32)
-			::DeleteFileA((webAppPath + "/webmvcpp_views.cpp").c_str());
+			
 #else
-			remove((webAppPath + "/webmvcpp_views.cpp").c_str());
+			
 #endif
 
 			if (buildResult) {

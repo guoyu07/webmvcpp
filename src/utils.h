@@ -31,8 +31,6 @@ namespace webmvcpp
 				return std::string(path.c_str(), slpos);
 			else
 				return "";
-
-			
 		}
 
 
@@ -71,6 +69,30 @@ namespace webmvcpp
 			}
 
 			return strings;
+		}
+
+		static std::string replace_string(std::string & content, const std::string & from, const std::string & to)
+		{
+			std::string result;
+
+			size_t prevPos = 0;
+			size_t curPos = 0;
+			while ((curPos = content.find(from, curPos)) != std::string::npos)
+			{
+				result += content.substr(prevPos, curPos - prevPos);
+				curPos += from.length();
+
+				result += to;
+
+				prevPos = curPos;
+			}
+
+			unsigned int contentLength = content.length();
+			if (prevPos != contentLength) {
+				result += content.substr(prevPos, contentLength - prevPos);
+			}
+
+			return result;
 		}
 
 		static std::string

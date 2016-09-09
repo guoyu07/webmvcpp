@@ -29,7 +29,7 @@ namespace webmvcpp
 
 			std::string controllerName = splittedPath.size()>2 ? splittedPath[1] : "";
 
-			std::set<std::string> & controllers = mvcapp->controllers;
+			std::set<std::string> & controllers = mvcapp->handlers->controllers;
 			if (splittedPath.size()>2 && controllers.find(controllerName) != controllers.end())
 			{
 				send_mvc_page(mvcapp, connection, request, response);
@@ -236,7 +236,7 @@ namespace webmvcpp
 				response.header.insert(std::pair<std::string, std::string>("Set-Cookie", sessionManager->make_cookie_value(sessionId)));
 			}
 			
-			std::map<std::string, std::map<std::string, request_model>> & reqModels = mvcapp->reqModels;
+			std::map<std::string, std::map<std::string, request_model>> & reqModels = mvcapp->handlers->models;
 			std::map<std::string, std::map<std::string, request_model> >::const_iterator reqModelIt = reqModels.find(request.path);
 			if (reqModelIt == reqModels.cend())
 			{

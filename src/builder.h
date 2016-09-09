@@ -149,12 +149,80 @@ namespace webmvcpp
 
 		bool generateModels(const std::string & outputFile)
 		{
-		
+			std::ofstream modelsContent(outputFile, std::ofstream::out);
+			modelsContent << "#include \"" << applicationName << ".h\"" << std::endl;
+			modelsContent << "namespace webmvcpp" << std::endl;
+			modelsContent << "{" << std::endl << std::endl;
+			modelsContent << std::endl;
+
+			std::string path = webApplicationPath + "/models";
+			DIR *currentDir = opendir(path.c_str());
+			if (!currentDir)
+				return false;
+
+			while (dirent *entry = readdir(currentDir))
+			{
+				if (entry->d_type == DT_REG)
+				{
+					std::string filePath = path + "/" + entry->d_name;
+
+					std::ifstream modelFile(filePath);
+					if (!modelFile.is_open())
+						return false;
+
+					modelsContent << "const char json_" << entry->d_name << "[] = \\" << std::endl;
+
+					std::string jsonLine;
+					while (std::getline(modelFile, jsonLine)) {
+						if (jsonLine.length() != 0)
+							modelsContent << "    \"" << utils::replace_string(jsonLine, "\"", "\\\"") << "\" \\" << std::endl;
+					}
+
+					modelsContent << ";" << std::endl;
+
+					modelsContent << "const json mdl_" << entry->d_name << " = json::parse(" << "json_" << entry->d_name << ");" << std::endl;
+					modelsContent << "gadd_request_model reqModel_" << entry->d_name << "(\"" << entry->d_name << "\", mdl_" << entry->d_name << ");" << std::endl;
+				}
+			}
+			closedir(currentDir);
+
+			modelsContent << std::endl << std::endl << "}";
+			modelsContent.close();
+
+			return true;
 		}
 
-		bool generateControllers(const std::string & outputFile, const std::vector<std::string> & controllers)
+		bool generateControllers(const std::string & outputFile)
 		{
+			std::ofstream controllersContent(outputFile, std::ofstream::out);
+			controllersContent << "#include \"" << applicationName << ".h\"" << std::endl;
+			controllersContent << "namespace webmvcpp" << std::endl;
+			controllersContent << "{" << std::endl << std::endl;
+			controllersContent << std::endl;
 
+			std::string path = webApplicationPath + "/controllers/";
+
+			DIR *currentDir = opendir(path.c_str());
+			if (!currentDir)
+				return false;
+
+			while (dirent *entry = readdir(currentDir))
+			{
+				if (entry->d_type == DT_REG) {
+					std::string fileName = entry->d_name;
+
+					const std::vector<std::string> splittedFile = utils::split_string(fileName, '.');
+
+					if (splittedFile.size() == 2 && splittedFile.back() == "cpp")
+						controllersContent << "gadd_controller controller_" << splittedFile.front() << "(\"" << splittedFile.front() << "\");" << std::endl;
+				}
+			}
+			closedir(currentDir);
+
+			controllersContent << std::endl << std::endl << "}";
+			controllersContent.close();
+
+			return true;
 		}
 
 		bool generateViews(const std::string & outputFile)
@@ -292,7 +360,6 @@ namespace webmvcpp
 			closedir(currentDir);
 
 			viewsContent << std::endl << std::endl << "}";
-
 			viewsContent.close();
 
 			return true;
