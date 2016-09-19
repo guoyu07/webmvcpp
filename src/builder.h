@@ -12,9 +12,7 @@ const char webmvcpp_multipart_parser_h[] = { 0 };
 
 extern "C" const char webmvcpp_headers_hpp_amalgamation[];
 extern "C" const char webmvcpp_sources_cpp_amalgamation[];
-extern "C" const char webmvcpp_http_parser_c[];
 extern "C" const char webmvcpp_http_parser_h[];
-extern "C" const char webmvcpp_multipart_parser_c[];
 extern "C" const char webmvcpp_multipart_parser_h[];
 
 namespace webmvcpp
@@ -34,9 +32,7 @@ namespace webmvcpp
 		headersHppAmalgamation(webAppPath + "/webmvcpp.hpp"),
 		sourcesCppAmalgamation(webAppPath + "/webmvcpp.cpp"),
 		headerHttpParser(webAppPath + "/webmvcpp_http_parser.h"),
-		sourcesHttpParser(webAppPath + "/webmvcpp_http_parser.c"),
-		headerMultipartParser(webAppPath + "/webmvcpp_multipart_parser.h"),
-		sourcesMultipartParser(webAppPath + "/webmvcpp_multipart_parser.c")
+		headerMultipartParser(webAppPath + "/webmvcpp_multipart_parser.h")
 		{
 			std::ofstream outputHeadersHppFile(headersHppAmalgamation, std::ofstream::out);
 			outputHeadersHppFile << webmvcpp_headers_hpp_amalgamation;
@@ -50,17 +46,9 @@ namespace webmvcpp
 			httpParserHFile << webmvcpp_http_parser_h;
 			httpParserHFile.close();
 
-			std::ofstream httpParserCFile(sourcesHttpParser, std::ofstream::out);
-			httpParserCFile << webmvcpp_http_parser_c;
-			httpParserCFile.close();
-
 			std::ofstream multipartParserHFile(headerMultipartParser, std::ofstream::out);
 			multipartParserHFile << webmvcpp_multipart_parser_h;
 			multipartParserHFile.close();
-
-			std::ofstream multipartParserCFile(sourcesMultipartParser, std::ofstream::out);
-			multipartParserCFile << webmvcpp_multipart_parser_c;
-			multipartParserCFile.close();
 		}
 
 		virtual ~builder()
@@ -69,16 +57,12 @@ namespace webmvcpp
 			::DeleteFileA(headersHppAmalgamation.c_str());
 			::DeleteFileA(sourcesCppAmalgamation.c_str());
 			::DeleteFileA(headerHttpParser.c_str());
-			::DeleteFileA(sourcesHttpParser.c_str());
 			::DeleteFileA(headerMultipartParser.c_str());
-			::DeleteFileA(sourcesMultipartParser.c_str());
 #else
 			remove(headersHppAmalgamation.c_str());
 			remove(sourcesCppAmalgamation.c_str());
 			remove(headerHttpParser.c_str());
-			remove(sourcesHttpParser.c_str());
 			remove(headerMultipartParser.c_str());
-			remove(sourcesMultipartParser.c_str());
 #endif
 		}
 
@@ -582,9 +566,7 @@ namespace webmvcpp
 		std::string headersHppAmalgamation;
 		std::string sourcesCppAmalgamation;
 		std::string headerHttpParser;
-		std::string sourcesHttpParser;
 		std::string headerMultipartParser;
-		std::string sourcesMultipartParser;
 
 #if defined (_WIN32)
 		const char *compiler_c_flags = "/c /Ox /nologo";

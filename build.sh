@@ -10,12 +10,6 @@ if test -x "$(type -p clang)"; then
     ./build
     rm ./build
     make -f ./makefile.clang
-    rm webmvcpp_headers_hpp_amalgamation.c
-    rm webmvcpp_sources_cpp_amalgamation.c
-    rm webmvcpp_http_parser_c.c
-    rm webmvcpp_http_parser_h.c
-    rm webmvcpp_multipart_parser_c.c
-    rm webmvcpp_multipart_parser_h.c
 else
     echo "#define WEBMVCPP_COMPILER_C \"gcc\"" >> ./src/buildinfo.h
     echo "#define WEBMVCPP_COMPILER_CPP \"g++\"" >> ./src/buildinfo.h
@@ -24,11 +18,8 @@ else
     ./build
     rm ./build
     make -f ./makefile.gcc
-    rm webmvcpp_headers_hpp_amalgamation.c
-    rm webmvcpp_sources_cpp_amalgamation.c
-    rm webmvcpp_http_parser_c.c
-    rm webmvcpp_http_parser_h.c
-    rm webmvcpp_multipart_parser_c.c
-    rm webmvcpp_multipart_parser_h.c
 fi
-
+rm webmvcpp_headers_hpp_amalgamation.c
+rm webmvcpp_sources_cpp_amalgamation.c
+rm webmvcpp_http_parser_h.c
+rm webmvcpp_multipart_parser_h.c

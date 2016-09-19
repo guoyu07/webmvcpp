@@ -134,26 +134,6 @@ int main()
     outputSourcesCppFile << "      0x00 };";
     outputSourcesCppFile.close();
 
-    std::ofstream outputHttpParserCFile ("webmvcpp_http_parser_c.c", std::ofstream::out);
-    outputHttpParserCFile << "const char webmvcpp_http_parser_c[] = { \\" << std::endl;
-    codeLineToHex("#include \"webmvcpp_http_parser.h\"", outputHttpParserCFile);
-    outputHttpParserCFile << "0x0D, 0x0A, " << " \\" << std::endl;
-    for(std::vector<std::string>::iterator it = http_parser_sources_c.begin();it != http_parser_sources_c.end();++it) {
-        appendFileToContent((*it).c_str(), outputHttpParserCFile);
-    }
-    outputHttpParserCFile << "      0x00 };";
-    outputHttpParserCFile.close();
-
-    std::ofstream outputMultipartParserCFile ("webmvcpp_multipart_parser_c.c", std::ofstream::out);
-    outputMultipartParserCFile << "const char webmvcpp_multipart_parser_c[] = { \\" << std::endl;
-    codeLineToHex("#include \"webmvcpp_multipart_parser.h\"", outputMultipartParserCFile);
-    outputMultipartParserCFile << "0x0D, 0x0A, " << " \\" << std::endl;
-    for(std::vector<std::string>::iterator it = multipart_parser_sources_c.begin();it != multipart_parser_sources_c.end();++it) {
-        appendFileToContent((*it).c_str(), outputMultipartParserCFile);
-    }
-    outputMultipartParserCFile << "      0x00 };";
-    outputMultipartParserCFile.close();
-
     std::ofstream outputHttpParserHFile ("webmvcpp_http_parser_h.c", std::ofstream::out);
     outputHttpParserHFile << "const char webmvcpp_http_parser_h[] = { \\" << std::endl;
     for(std::vector<std::string>::iterator it = http_parser_headers_h.begin();it != http_parser_headers_h.end();++it) {
