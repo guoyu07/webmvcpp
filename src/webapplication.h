@@ -34,8 +34,11 @@ namespace webmvcpp
 
 	#define WEBMVC_VIEWDATA "<webmvcpp:content:"
 	#define WEBMVC_VIEWDATA_CLOSED "</webmvcpp:content:"
+	#define WEBMVC_VIEWCONTROL "<webmvc:control:"
+	#define WEBMVC_VIEWCONTROL_CLOSED "</webmvc:control:"
 	#define WEBMVC_CLOSEBLOCK_END " />"
 	#define WEBMVC_BLOCK_END ">"
+
 
     class application
     {
@@ -47,7 +50,7 @@ namespace webmvcpp
 		virtual void start() {}
 		virtual void stop() {}
 
-        void acceptCore(core *c){ mvcCore = c; }
+        void acceptCore(core_prototype *c){ mvcCore = c; }
 
 		virtual bool init(const std::string & w, const std::string & s)
 		{
@@ -62,7 +65,7 @@ namespace webmvcpp
         std::string webappPath;
         std::string staticPath;
 
-        core *mvcCore;
+		core_prototype *mvcCore;
 
         std::map<std::string, std::string> routeMap;
 
