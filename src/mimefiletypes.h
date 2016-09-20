@@ -3,7 +3,7 @@
 
 namespace webmvcpp
 {
-    struct mime_file_types
+    class mime_file_types : public mime_file_types_prototype
     {
     public:
 		std::map<std::string, std::string> mimeTypes = { \

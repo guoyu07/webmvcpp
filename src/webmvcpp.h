@@ -18,12 +18,12 @@
 #include "utils.h"
 #include "systemutils.h"
 
-#include "mimefiletypes.h"
-
 #include "httprequest.h"
 #include "httpresponse.h"
 
 #include "mvcppshared.h"
+
+#include "connection.h"
 
 #include "variant.h"
 #include "errorpage.h"
@@ -33,7 +33,8 @@
 #include "webapplication.h"
 #include "requestparser.h"
 #include "sessionmanager.h"
-#include "connection.h"
+#include "mimefiletypes.h"
+#include "serverconnection.h"
 #include "requestmanager.h"
 
 

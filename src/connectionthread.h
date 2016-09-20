@@ -49,8 +49,8 @@ namespace webmvcpp
 		http_connection_thread *_this = static_cast<http_connection_thread *>(ctx);
 		std::unique_ptr<http_connection_thread> threadCleaner(_this);
 
-		http_connection *connection = new http_connection(_this->mvcCore, _this->socketDescriptor);
-		std::unique_ptr<http_connection>  connectionCleaner(connection);
+		http_server_connection *connection = new http_server_connection(_this->mvcCore, _this->socketDescriptor);
+		std::unique_ptr<http_server_connection>  connectionCleaner(connection);
 
 		connection->run();
 

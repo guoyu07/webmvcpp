@@ -188,16 +188,16 @@ namespace webmvcpp
 			return httpServer.start_listening(bindPort);
 		}
 
-        void stop();
+                void stop();
 
-        void application_unload(application *mvcApp) {
+                void application_unload(application *mvcApp) {
 
 		}
 
-		virtual mime_file_types *get_mime_types() { return &mimeTypes; }
+		virtual mime_file_types_prototype *get_mime_types() { return &mimeTypes; }
 		virtual session_manager *get_session_manager() { return &sessionManager; }
 
-		virtual bool process_request(http_connection *connection, http_request & request, http_response & response)
+		virtual bool process_request(http_server_connection *connection, http_request & request, http_response & response)
 		{
 			std::map<std::string, webapplication_ptr>::iterator it = webApps.find(request.host);
 			if (it == webApps.end())

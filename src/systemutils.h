@@ -250,7 +250,7 @@ namespace webmvcpp
 			return 0;
 		}
 
-		static std::string getApplicationPath(const char** argv)
+		static std::string getApplicationPath()
 		{
 			std::string appPath;
 #if defined (_WIN32)
@@ -259,7 +259,7 @@ namespace webmvcpp
 			pathBuffer[l] = 0;
 			appPath = pathBuffer;
 #elif (__linux)
-			appPath = getauxval(AT_EXECFN);
+			appPath = (char *)getauxval(AT_EXECFN);
 #elif (__APPLE__)
 			char pathBuffer[PATH_MAX] = { 0 };
 			uint32_t size = sizeof(pathBuffer);

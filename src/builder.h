@@ -1,19 +1,8 @@
 #ifndef WEBMVCPP_BUILDER_H
 #define WEBMVCPP_BUILDER_H
 
-#ifdef DEBUG
-const char webmvcpp_headers_hpp_amalgamation[] = { 0 };
-const char webmvcpp_sources_cpp_amalgamation[] = { 0 };
-const char webmvcpp_http_parser_c[] = { 0 };
-const char webmvcpp_http_parser_h[] = { 0 };
-const char webmvcpp_multipart_parser_c[] = { 0 };
-const char webmvcpp_multipart_parser_h[] = { 0 };
-#endif
-
 extern "C" const char webmvcpp_headers_hpp_amalgamation[];
 extern "C" const char webmvcpp_sources_cpp_amalgamation[];
-extern "C" const char webmvcpp_http_parser_h[];
-extern "C" const char webmvcpp_multipart_parser_h[];
 
 namespace webmvcpp
 {
@@ -30,9 +19,7 @@ namespace webmvcpp
 		applicationName(appName),
 		webApplicationPath(webAppPath),
 		headersHppAmalgamation(webAppPath + "/webmvcpp.hpp"),
-		sourcesCppAmalgamation(webAppPath + "/webmvcpp.cpp"),
-		headerHttpParser(webAppPath + "/webmvcpp_http_parser.h"),
-		headerMultipartParser(webAppPath + "/webmvcpp_multipart_parser.h")
+		sourcesCppAmalgamation(webAppPath + "/webmvcpp.cpp")
 		{
 			std::ofstream outputHeadersHppFile(headersHppAmalgamation, std::ofstream::out);
 			outputHeadersHppFile << webmvcpp_headers_hpp_amalgamation;
@@ -41,14 +28,6 @@ namespace webmvcpp
 			std::ofstream outputSourcesCppFile(sourcesCppAmalgamation, std::ofstream::out);
 			outputSourcesCppFile << webmvcpp_sources_cpp_amalgamation;
 			outputSourcesCppFile.close();
-
-			std::ofstream httpParserHFile(headerHttpParser, std::ofstream::out);
-			httpParserHFile << webmvcpp_http_parser_h;
-			httpParserHFile.close();
-
-			std::ofstream multipartParserHFile(headerMultipartParser, std::ofstream::out);
-			multipartParserHFile << webmvcpp_multipart_parser_h;
-			multipartParserHFile.close();
 		}
 
 		virtual ~builder()
@@ -56,13 +35,9 @@ namespace webmvcpp
 #if defined (_WIN32)
 			::DeleteFileA(headersHppAmalgamation.c_str());
 			::DeleteFileA(sourcesCppAmalgamation.c_str());
-			::DeleteFileA(headerHttpParser.c_str());
-			::DeleteFileA(headerMultipartParser.c_str());
 #else
 			remove(headersHppAmalgamation.c_str());
 			remove(sourcesCppAmalgamation.c_str());
-			remove(headerHttpParser.c_str());
-			remove(headerMultipartParser.c_str());
 #endif
 		}
 

@@ -76,48 +76,28 @@ int main()
     headers_hpp.push_back("src/buildinfo.h");
     headers_hpp.push_back("src/utils.h");
     headers_hpp.push_back("src/systemutils.h");
-    headers_hpp.push_back("src/mimefiletypes.h");
     headers_hpp.push_back("src/httprequest.h");
     headers_hpp.push_back("src/httpresponse.h");
     headers_hpp.push_back("src/mvcppshared.h");
+    headers_hpp.push_back("src/connection.h");
     headers_hpp.push_back("src/variant.h");
     headers_hpp.push_back("src/errorpage.h");
-    headers_hpp.push_back("src/multipartparser.h");
+//    headers_hpp.push_back("src/multipartparser.h");
     headers_hpp.push_back("src/handlers.h");
     headers_hpp.push_back("src/requestmodel.h");
     headers_hpp.push_back("src/webapplication.h");
-    headers_hpp.push_back("src/requestparser.h");
+//    headers_hpp.push_back("src/requestparser.h");
     headers_hpp.push_back("src/sessionmanager.h");
-    headers_hpp.push_back("src/connection.h");
-    headers_hpp.push_back("src/requestmanager.h");
-    headers_hpp.push_back("src/applicationloader.h");
-    headers_hpp.push_back("src/connectionthread.h");
-    headers_hpp.push_back("src/server.h");
-    headers_hpp.push_back("src/builder.h");
-    headers_hpp.push_back("src/webmvcppcore.h");
-
-    std::vector<std::string> http_parser_headers_h;
-    http_parser_headers_h.push_back("3rdparty/http_parser/http_parser.h");
-
-    std::vector<std::string> multipart_parser_headers_h;
-    multipart_parser_headers_h.push_back("3rdparty/multipart_parser/multipart_parser.h");
-
-    std::vector<std::string> http_parser_sources_c;
-    http_parser_sources_c.push_back("3rdparty/http_parser/http_parser.c");
-
-    std::vector<std::string> multipart_parser_sources_c;
-    multipart_parser_sources_c.push_back("3rdparty/multipart_parser/multipart_parser.c");
+//    headers_hpp.push_back("src/mimefiletypes.h");
+//    headers_hpp.push_back("src/requestmanager.h");
+//    headers_hpp.push_back("src/applicationloader.h");
+//    headers_hpp.push_back("src/connectionthread.h");
+//    headers_hpp.push_back("src/server.h");
+//    headers_hpp.push_back("src/builder.h");
+//    headers_hpp.push_back("src/webmvcppcore.h");
 
     std::ofstream outputHeadersHppFile ("webmvcpp_headers_hpp_amalgamation.c", std::ofstream::out);
     outputHeadersHppFile << "const char webmvcpp_headers_hpp_amalgamation[] = { \\" << std::endl;
-    codeLineToHex("extern \"C\" {", outputHeadersHppFile);
-    outputHeadersHppFile << "0x0D, 0x0A, " << " \\" << std::endl;
-    codeLineToHex("#include \"webmvcpp_multipart_parser.h\"", outputHeadersHppFile);
-    outputHeadersHppFile << "0x0D, 0x0A, " << " \\" << std::endl;
-    codeLineToHex("#include \"webmvcpp_http_parser.h\"", outputHeadersHppFile);
-    outputHeadersHppFile << "0x0D, 0x0A, " << " \\" << std::endl;
-    codeLineToHex("}", outputHeadersHppFile);
-    outputHeadersHppFile << "0x0D, 0x0A, " << " \\" << std::endl;
     for(std::vector<std::string>::iterator it = headers_hpp.begin();it != headers_hpp.end();++it) {
         appendFileToContent((*it).c_str(), outputHeadersHppFile);
     }
@@ -133,22 +113,6 @@ int main()
     }
     outputSourcesCppFile << "      0x00 };";
     outputSourcesCppFile.close();
-
-    std::ofstream outputHttpParserHFile ("webmvcpp_http_parser_h.c", std::ofstream::out);
-    outputHttpParserHFile << "const char webmvcpp_http_parser_h[] = { \\" << std::endl;
-    for(std::vector<std::string>::iterator it = http_parser_headers_h.begin();it != http_parser_headers_h.end();++it) {
-        appendFileToContent((*it).c_str(), outputHttpParserHFile);
-    }
-    outputHttpParserHFile << "      0x00 };";
-    outputHttpParserHFile.close();
-
-    std::ofstream outputMultipartParserHFile ("webmvcpp_multipart_parser_h.c", std::ofstream::out);
-    outputMultipartParserHFile << "const char webmvcpp_multipart_parser_h[] = { \\" << std::endl;
-    for(std::vector<std::string>::iterator it = multipart_parser_headers_h.begin();it != multipart_parser_headers_h.end();++it) {
-        appendFileToContent((*it).c_str(), outputMultipartParserHFile);
-    }
-    outputMultipartParserHFile << "      0x00 };";
-    outputMultipartParserHFile.close();
 
     return 0;
 }

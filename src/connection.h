@@ -8,10 +8,8 @@ namespace webmvcpp
     {
         http_connection();
     public:
-		http_connection(core_prototype *c, int socket):
-		httpReqParser(request),
-		socketDescriptor(socket),
-		mvcCore(c)
+		http_connection(int socket):
+		socketDescriptor(socket)
 		{
 			recvDataFlags = 0;
 #ifdef _WIN32
@@ -22,40 +20,7 @@ namespace webmvcpp
 			recvBuffer.resize(16 * 1024);
 		}
 
-		void
-		run()
-		{
-			do
-			{
-				request.clear();
-				response.clear();
-
-				try
-				{
-
-					if (!wait_for_header())
-						break;
-
-					if (!mvcCore->process_request(this, request, response))
-						request.isKeepAlive = false;
-				}
-				catch (...)
-				{
-					request.isKeepAlive = false;
-					const char *fatalErrorMessage = "HTTP/1.1 200 OK\r\nConnection: close\r\n\r\n<h3>Internal server error</h3><p>WebMVCpp - Your C++ MVC Web Engine</p>";
-					::send(socketDescriptor, fatalErrorMessage, strlen(fatalErrorMessage), sendDataFlags);
-					break;
-				}
-			} while (request.isKeepAlive);
-
-#ifdef _WIN32
-			::closesocket(socketDescriptor);
-#else
-			::close(socketDescriptor);
-#endif
-		}
-
-        void end_response()
+                void end_response()
 		{
 			::send(socketDescriptor, "0\r\n\r\n", 5, sendDataFlags);
 		}
@@ -74,7 +39,7 @@ namespace webmvcpp
 
 			return readyRead;
 		}
-        
+
 		bool
 		wait_for_data()
 		{
@@ -91,44 +56,6 @@ namespace webmvcpp
 				return true;
 
 			return false;
-		}
-
-		bool
-		wait_for_header()
-		{
-			while (!httpReqParser.is_header_received())
-			{
-				bool readyRead = this->wait_for_data();
-				if (!readyRead)
-					return false;
-
-				int rcvBytes = ::recv(socketDescriptor, (char *)&recvBuffer.front(), recvBuffer.size(), recvDataFlags);
-				if (rcvBytes == 0 || rcvBytes == -1)
-					return false;
-
-				httpReqParser.accept_data(&recvBuffer.front(), rcvBytes);
-			}
-
-			return true;
-		}
-
-		bool
-		wait_for_content()
-		{
-			while (!httpReqParser.is_body_received())
-			{
-				bool readyRead = this->wait_for_data();
-				if (!readyRead)
-					return false;
-
-				int rcvBytes = ::recv(socketDescriptor, (char *)&recvBuffer.front(), recvBuffer.size(), recvDataFlags);
-				if (rcvBytes == 0 || rcvBytes == -1)
-					return false;
-
-				httpReqParser.accept_data(&recvBuffer.front(), rcvBytes);
-			}
-
-			return true;
 		}
 
 		void
@@ -261,24 +188,16 @@ namespace webmvcpp
 			}
 		}
 
-		core_prototype *mvc_core() { return mvcCore; }
+	core_prototype *mvc_core() { return mvcCore; }
 
-    private:
-        void parse_post_url_encoded_params();
-        void parse_post_multipartdata_params();
-
-        http_request request;
-        http_response response;
-
-        http_request_parser httpReqParser;
-        
+    protected:
         int socketDescriptor;
         std::vector<unsigned char> recvBuffer;
 
-		core_prototype *mvcCore;
+	core_prototype *mvcCore;
 
-		int sendDataFlags;
-		int recvDataFlags;
+	int sendDataFlags;
+	int recvDataFlags;
     };
 }
 

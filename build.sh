@@ -21,5 +21,3 @@ else
 fi
 rm webmvcpp_headers_hpp_amalgamation.c
 rm webmvcpp_sources_cpp_amalgamation.c
-rm webmvcpp_http_parser_h.c
-rm webmvcpp_multipart_parser_h.c
