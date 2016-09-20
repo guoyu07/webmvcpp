@@ -32,7 +32,7 @@ namespace webmvcpp
 			std::set<std::string> & controllers = mvcapp->handlers->controllers;
 			if (splittedPath.size()>2 && controllers.find(controllerName) != controllers.end())
 			{
-				send_mvc_page(mvcapp, connection, request, response);
+				send_mvc_page(mvcapp, controllerName, connection, request, response);
 			}
 			else
 				send_static_file(mvcapp, connection, request, response);
@@ -203,13 +203,11 @@ namespace webmvcpp
 		}
 
 		void
-		send_mvc_page(application *mvcapp, http_server_connection *connection, http_request & request, http_response & response)
+		send_mvc_page(application *mvcapp, const std::string & controllerName, http_server_connection *connection, http_request & request, http_response & response)
 		{
 			response.contentType = "text/html";
 
 			session_manager *sessionManager = connection->mvc_core()->get_session_manager();
-
-			mvc_view_data viewData;
 
 			std::string sessionId;
 
@@ -271,7 +269,23 @@ namespace webmvcpp
 				}
 
 			}
+
+			std::map<std::string, webmvcpp_controller_requests_handler> & ctrlReqs = mvcapp->handlers->controllerRequests;
+			std::map<std::string, webmvcpp_controller_requests_handler>::const_iterator reqContrlrHandlerIt = ctrlReqs.find(controllerName);
+			if (reqContrlrHandlerIt != ctrlReqs.end())
+			{
+				std::lock_guard<std::mutex> locker(sessionContext->get_lock());
+
+				if (!reqContrlrHandlerIt->second(connection, request, response, sessionContext->get_data()))
+				{
+					connection->send_response_header(response);
+					connection->send_response_content(response.content);
+
+					return;
+				}
+			}
 			
+			mvc_view_data viewData;
 			std::map<std::string, webmvcpp_request_handler> & req = mvcapp->handlers->requests;
 			std::map<std::string, webmvcpp_request_handler>::const_iterator reqHandlerIt = req.find(request.path);
 			if (reqHandlerIt != req.end())

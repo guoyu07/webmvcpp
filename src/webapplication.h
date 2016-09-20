@@ -20,6 +20,7 @@ namespace webmvcpp
 		std::set<std::string> controllers;
 		std::map<std::string, std::map<std::string, request_model>> models;
         std::map<std::string, webmvcpp_request_handler> requests;
+		std::map<std::string, webmvcpp_controller_requests_handler> controllerRequests;
 
         static mvc_handlers *g;
         static mvc_handlers *global() {
@@ -136,6 +137,16 @@ namespace webmvcpp
             webmvcpp::mvc_handlers::global()->requests.insert(std::pair<std::string, webmvcpp_request_handler>(url, fn));
         }
     };
+
+	class gset_controller_requests_handler
+	{
+		gset_controller_requests_handler();
+	public:
+		gset_controller_requests_handler(const std::string & name, webmvcpp_controller_requests_handler fn)
+		{
+			webmvcpp::mvc_handlers::global()->controllerRequests.insert(std::pair<std::string, webmvcpp_controller_requests_handler>(name, fn));
+		}
+	};
 
     class gset_master_page_handler
     {
