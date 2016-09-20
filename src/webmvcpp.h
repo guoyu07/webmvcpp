@@ -7,11 +7,13 @@
 #if defined(_WIN32)
 #include "dirent_win32.h"
 #endif
+extern "C" {
 #include "http_parser/http_parser.h"
 #include "multipart_parser/multipart_parser.h"
+}
 #include "json.hpp"
 #include "pugixml/pugixml.hpp"
-#include "md5/md5.h"
+#include "md5.h"
 
 #include "buildinfo.h"
 

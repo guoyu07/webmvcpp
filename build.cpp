@@ -62,7 +62,6 @@ int main()
 {
     std::vector<std::string> sources_cpp;
     sources_cpp.push_back("3rdparty/pugixml/pugixml.cpp");
-    sources_cpp.push_back("3rdparty/md5/md5.cpp");
 
     std::vector<std::string> headers_hpp;
     headers_hpp.push_back("src/declarations.h");
@@ -72,7 +71,7 @@ int main()
     headers_hpp.push_back("3rdparty/boost/intrusive_ptr.hpp");
     headers_hpp.push_back("3rdparty/json.hpp");
     headers_hpp.push_back("3rdparty/pugixml/pugixml.hpp");
-    headers_hpp.push_back("3rdparty/md5/md5.h");
+    headers_hpp.push_back("3rdparty/md5.h");
     headers_hpp.push_back("src/buildinfo.h");
     headers_hpp.push_back("src/utils.h");
     headers_hpp.push_back("src/systemutils.h");
@@ -82,19 +81,10 @@ int main()
     headers_hpp.push_back("src/connection.h");
     headers_hpp.push_back("src/variant.h");
     headers_hpp.push_back("src/errorpage.h");
-//    headers_hpp.push_back("src/multipartparser.h");
     headers_hpp.push_back("src/handlers.h");
     headers_hpp.push_back("src/requestmodel.h");
     headers_hpp.push_back("src/webapplication.h");
-//    headers_hpp.push_back("src/requestparser.h");
     headers_hpp.push_back("src/sessionmanager.h");
-//    headers_hpp.push_back("src/mimefiletypes.h");
-//    headers_hpp.push_back("src/requestmanager.h");
-//    headers_hpp.push_back("src/applicationloader.h");
-//    headers_hpp.push_back("src/connectionthread.h");
-//    headers_hpp.push_back("src/server.h");
-//    headers_hpp.push_back("src/builder.h");
-//    headers_hpp.push_back("src/webmvcppcore.h");
 
     std::ofstream outputHeadersHppFile ("webmvcpp_headers_hpp_amalgamation.c", std::ofstream::out);
     outputHeadersHppFile << "const char webmvcpp_headers_hpp_amalgamation[] = { \\" << std::endl;

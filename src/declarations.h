@@ -26,6 +26,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include <string.h>
+
 #ifdef _WIN32
 #include <codecvt>
 #include <winsock.h>

@@ -94,7 +94,7 @@ namespace webmvcpp
 		{
 			std::ostringstream randopmBuffer;
 			randopmBuffer << std::time(0) << "__" << ++nSession;
-			return  md5(randopmBuffer.str());
+			return MD5::calc(randopmBuffer.str());
 		}
 
 		void
