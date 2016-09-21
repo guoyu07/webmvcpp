@@ -64,3 +64,5 @@
 #ifndef min
 #define min(a,b) (((a) < (b)) ? (a) : (b))
 #endif
+
+#define PUGIXML_HEADER_ONLY

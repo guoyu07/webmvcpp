@@ -2,7 +2,6 @@
 #define WEBMVCPP_BUILDER_H
 
 extern "C" const char webmvcpp_headers_hpp_amalgamation[];
-extern "C" const char webmvcpp_sources_cpp_amalgamation[];
 
 namespace webmvcpp
 {
@@ -18,26 +17,19 @@ namespace webmvcpp
         builder(const std::string & appName, const std::string & webAppPath):
 		applicationName(appName),
 		webApplicationPath(webAppPath),
-		headersHppAmalgamation(webAppPath + "/webmvcpp.hpp"),
-		sourcesCppAmalgamation(webAppPath + "/webmvcpp.cpp")
+		headersHppAmalgamation(webAppPath + "/webmvcpp.hpp")
 		{
 			std::ofstream outputHeadersHppFile(headersHppAmalgamation, std::ofstream::out);
 			outputHeadersHppFile << webmvcpp_headers_hpp_amalgamation;
 			outputHeadersHppFile.close();
-
-			std::ofstream outputSourcesCppFile(sourcesCppAmalgamation, std::ofstream::out);
-			outputSourcesCppFile << webmvcpp_sources_cpp_amalgamation;
-			outputSourcesCppFile.close();
 		}
 
 		virtual ~builder()
 		{
 #if defined (_WIN32)
 			::DeleteFileA(headersHppAmalgamation.c_str());
-			::DeleteFileA(sourcesCppAmalgamation.c_str());
 #else
 			remove(headersHppAmalgamation.c_str());
-			remove(sourcesCppAmalgamation.c_str());
 #endif
 		}
 

@@ -13,6 +13,7 @@ extern "C" {
 }
 #include "json.hpp"
 #include "pugixml/pugixml.hpp"
+#include "pugixml/pugixml.cpp"
 #include "md5.h"
 
 #include "buildinfo.h"

@@ -13,4 +13,3 @@ build.exe
 @del build.obj
 nmake -f ./makefile.msvc
 @del webmvcpp_headers_hpp_amalgamation.c
-@del webmvcpp_sources_cpp_amalgamation.c

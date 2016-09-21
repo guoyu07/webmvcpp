@@ -60,9 +60,6 @@ bool appendFileToContent(const char *sourceFilePath, std::ostream & content)
 
 int main()
 {
-    std::vector<std::string> sources_cpp;
-    sources_cpp.push_back("3rdparty/pugixml/pugixml.cpp");
-
     std::vector<std::string> headers_hpp;
     headers_hpp.push_back("src/declarations.h");
 #ifdef _WIN32
@@ -71,6 +68,7 @@ int main()
     headers_hpp.push_back("3rdparty/boost/intrusive_ptr.hpp");
     headers_hpp.push_back("3rdparty/json.hpp");
     headers_hpp.push_back("3rdparty/pugixml/pugixml.hpp");
+    headers_hpp.push_back("3rdparty/pugixml/pugixml.cpp");
     headers_hpp.push_back("3rdparty/md5.h");
     headers_hpp.push_back("src/buildinfo.h");
     headers_hpp.push_back("src/utils.h");
@@ -93,16 +91,6 @@ int main()
     }
     outputHeadersHppFile << "      0x00 };";
     outputHeadersHppFile.close();
-
-    std::ofstream outputSourcesCppFile ("webmvcpp_sources_cpp_amalgamation.c", std::ofstream::out);
-    outputSourcesCppFile << "const char webmvcpp_sources_cpp_amalgamation[] = { \\" << std::endl;
-    codeLineToHex("#include \"webmvcpp.hpp\"", outputSourcesCppFile);
-    outputSourcesCppFile << "0x0D, 0x0A, " << " \\" << std::endl;
-    for(std::vector<std::string>::iterator it = sources_cpp.begin();it != sources_cpp.end();++it) {
-        appendFileToContent((*it).c_str(), outputSourcesCppFile);
-    }
-    outputSourcesCppFile << "      0x00 };";
-    outputSourcesCppFile.close();
 
     return 0;
 }

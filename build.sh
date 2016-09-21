@@ -20,4 +20,3 @@ else
     make -f ./makefile.gcc
 fi
 rm webmvcpp_headers_hpp_amalgamation.c
-rm webmvcpp_sources_cpp_amalgamation.c
