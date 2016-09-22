@@ -65,7 +65,7 @@ int main()
 #ifdef _WIN32
 	headers_hpp.push_back("3rdparty/dirent_win32.h");
 #endif
-    headers_hpp.push_back("3rdparty/boost/intrusive_ptr.hpp");
+    headers_hpp.push_back("3rdparty/intrusive_ptr.hpp");
     headers_hpp.push_back("3rdparty/json.hpp");
     headers_hpp.push_back("3rdparty/pugixml/pugixml.hpp");
     headers_hpp.push_back("3rdparty/pugixml/pugixml.cpp");

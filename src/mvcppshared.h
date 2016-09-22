@@ -3,7 +3,7 @@ using namespace nlohmann;
 
 namespace webmvcpp
 {
-	class core;
+	class engine;
 	class http_server;
 	class http_server_connection;
 	class session_manager;

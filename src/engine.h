@@ -23,10 +23,10 @@ namespace webmvcpp
 		nlohmann::json rawObject;
 	};
 
-    class core : public core_prototype
+    class engine : public core_prototype
     {
     public:
-		core() :
+		engine() :
 		requestManager(this),
 		sessionManager(),
 		httpServer(this)
@@ -56,6 +56,52 @@ namespace webmvcpp
 			return serviceStatus;
 		}
 #endif
+
+                void display_version()
+                {
+                    std::cout << "WebMVC++ Open Source Web Application Engine" << std::endl;
+                    std::cout << "Version: 0.4." << WEBMVCPP_BUILD_NUMBER << " " << __DATE__ << " at " << __TIME__ << std::endl;
+                    std::cout << "Compiler: " << WEBMVCPP_COMPILER_CPP << std::endl;
+                }
+
+                void install()
+                {
+                    std::string srcPath = webmvcpp::systemutils::getApplicationPath();
+                    std::string targetPath;
+#ifdef _WIN32
+                    char sysDirBuffer[MAX_PATH];
+                    sysDirBuffer[GetSystemDirectoryA(sysDirBuffer, sizeof(sysDirBuffer))] = 0;
+                    targetPath = sysDirBuffer;
+                    targetPath += "\\webmvcpp.exe";
+#else
+                    targetPath = "/usr/local/bin/webmvcpp";
+#endif
+                    std::cout << "Installing " << srcPath << " to " << targetPath << std::endl;
+                    std::ifstream  src(srcPath, std::ios::binary);
+                    std::ofstream  dst(targetPath,  std::ios::binary);
+#ifndef _WIN32
+                    chmod("/usr/local/bin/webmvcpp", S_IRWXU|S_IRWXG|S_IROTH|S_IWOTH);
+#endif
+                    dst << src.rdbuf() <<std::flush;
+                    std::cout << "Success" << std::endl;
+                    dst.close();
+                    src.close();
+               }
+
+               void uninstall()
+               {
+#ifdef _WIN32
+                   std::string targetPath;
+                   char sysDirBuffer[MAX_PATH];
+                   sysDirBuffer[GetSystemDirectoryA(sysDirBuffer, sizeof(sysDirBuffer))] = 0;
+                   targetPath = sysDirBuffer;
+                   targetPath += "\\webmvcpp.exe";
+                   ::DeleteFileA(targetPath.c_str());
+#else
+                   ::remove("/usr/local/bin/webmvcpp");
+#endif
+                   std::cout << "Success" << std::endl;
+                }
 
 		bool load_web_application(const std::string & name, const std::list<std::string> & aliases,const std::string & modulePath, const std::string & webAppPath, const std::string & staticPath)
 		{
@@ -363,7 +409,7 @@ namespace webmvcpp
 
 			SERVICE_TABLE_ENTRYA ServiceTable[] =
 			{
-				{ (LPSTR)get_service_name(), (LPSERVICE_MAIN_FUNCTIONA)core::service_main },
+				{ (LPSTR)get_service_name(), (LPSERVICE_MAIN_FUNCTIONA)engine::service_main },
 				{ NULL, NULL }
 			};
 
@@ -398,7 +444,7 @@ namespace webmvcpp
 			close(STDOUT_FILENO);
 			close(STDERR_FILENO);
 
-			core::service_worker_thread(this);
+			engine::service_worker_thread(this);
 #endif
 			return true;
 		}
@@ -488,7 +534,7 @@ namespace webmvcpp
 		static unsigned long service_worker_thread(void *lpParam)
 #endif
 		{
-			core *webMvcCore = static_cast<core *>(lpParam);
+			engine *webMvcCore = static_cast<engine *>(lpParam);
 
 			webMvcCore->start(false, 0, NULL);
 

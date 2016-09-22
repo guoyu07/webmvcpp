@@ -3,8 +3,6 @@
 
 namespace webmvcpp
 {
-    class core;
-
     class http_server
     {
         http_server();

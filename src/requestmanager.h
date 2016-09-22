@@ -3,7 +3,6 @@
 
 namespace webmvcpp
 {
-    class core;
     class application;
 
     class request_manager
