@@ -49,12 +49,12 @@ namespace webmvcpp
             return *this;
         }
 
-		template <typename T> variant_impl& operator=(const T & val)
-		{
-			set(val);
+        template <typename T> variant_impl& operator=(const T & val)
+        {
+            set(val);
 
-			return *this;
-		}
+            return *this;
+        }
 
         std::string to_string() const
         { 
@@ -290,117 +290,117 @@ namespace webmvcpp
             memcpy(&valueBuffer.front(), &val, sizeof(T));
         }
 
-		unsigned long reference = 0;
+        unsigned long reference = 0;
     };
 
-	class variant
-	{
-	public:
+    class variant
+    {
+    public:
 
-		typedef variant_impl element_type;
+        typedef variant_impl element_type;
 
-		variant() : p_(0)
-		{
-		}
+        variant() : p_(0)
+        {
+        }
 
-		inline void variant_add_ref(variant_impl *p)
-		{
-			++(p->reference);
-		}
+        inline void variant_add_ref(variant_impl *p)
+        {
+            ++(p->reference);
+        }
 
-		inline void variant_release(variant_impl *p)
-		{
-			if (--(p->reference) == 0)
-				delete p;
-		}
+        inline void variant_release(variant_impl *p)
+        {
+            if (--(p->reference) == 0)
+                delete p;
+        }
 
-		variant(variant_impl * p, bool add_ref = true) : p_(p)
-		{
-			if (p_ != 0 && add_ref) variant_add_ref(p_);
-		}
+        variant(variant_impl * p, bool add_ref = true) : p_(p)
+        {
+            if (p_ != 0 && add_ref) variant_add_ref(p_);
+        }
 
-		variant(variant const & rhs) : p_(rhs.p_)
-		{
-			if (p_ != 0) variant_add_ref(p_);
-		}
+        variant(variant const & rhs) : p_(rhs.p_)
+        {
+            if (p_ != 0) variant_add_ref(p_);
+        }
 
-		~variant()
-		{
-			if (p_ != 0) variant_release(p_);
-		}
+        ~variant()
+        {
+            if (p_ != 0) variant_release(p_);
+        }
 
-		variant & operator=(variant const & rhs)
-		{
-			variant(rhs).swap(*this);
-			return *this;
-		}
+        variant & operator=(variant const & rhs)
+        {
+            variant(rhs).swap(*this);
+            return *this;
+        }
 
-		variant & operator=(variant_impl * rhs)
-		{
-			variant(rhs).swap(*this);
-			return *this;
-		}
+        variant & operator=(variant_impl * rhs)
+        {
+            variant(rhs).swap(*this);
+            return *this;
+        }
 
-		variant& operator=(const std::vector<unsigned char> & val)
-		{
-			p_->set(val);
+        variant& operator=(const std::vector<unsigned char> & val)
+        {
+            p_->set(val);
 
-			return *this;
-		}
+            return *this;
+        }
 
-		variant& operator=(const std::string & val)
-		{
-			p_->set(val);
+        variant& operator=(const std::string & val)
+        {
+            p_->set(val);
 
-			return *this;
-		}
+            return *this;
+        }
 
-		variant& operator=(const std::wstring & val)
-		{
-			p_->set(val);
+        variant& operator=(const std::wstring & val)
+        {
+            p_->set(val);
 
-			return *this;
-		}
+            return *this;
+        }
 
-		variant& operator=(const bool & val)
-		{
-			p_->set(val);
+        variant& operator=(const bool & val)
+        {
+            p_->set(val);
 
-			return *this;
-		}
+            return *this;
+        }
 
-		template <typename T> variant& operator=(const T & val)
-		{
-			p_->set(val);
+        template <typename T> variant& operator=(const T & val)
+        {
+            p_->set(val);
 
-			return *this;
-		}
+            return *this;
+        }
 
-		variant_impl * get() const
-		{
-			return p_;
-		}
+        variant_impl * get() const
+        {
+            return p_;
+        }
 
-		variant_impl & operator*() const
-		{
-			return *p_;
-		}
+        variant_impl & operator*() const
+        {
+            return *p_;
+        }
 
-		variant_impl * operator->() const
-		{
-			return p_;
-		}
+        variant_impl * operator->() const
+        {
+            return p_;
+        }
 
-		void swap(variant & rhs)
-		{
-			variant_impl * tmp = p_;
-			p_ = rhs.p_;
-			rhs.p_ = tmp;
-		}
+        void swap(variant & rhs)
+        {
+            variant_impl * tmp = p_;
+            p_ = rhs.p_;
+            rhs.p_ = tmp;
+        }
 
-	private:
-		variant_impl * p_;
-	};
+    private:
+        variant_impl * p_;
+    };
 
     class variant_map : public std::map<std::string, variant>
     {

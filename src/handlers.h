@@ -13,7 +13,7 @@ namespace webmvcpp
 
     typedef bool (*webmvcpp_check_authorized_fn)(http_request & request, variant_map & session);
 
-	typedef bool(*webmvcpp_controller_requests_handler)(http_connection *connection, http_request & request, http_response & response, variant_map & session);
+    typedef bool(*webmvcpp_controller_requests_handler)(http_connection *connection, http_request & request, http_response & response, variant_map & session);
     typedef bool (*webmvcpp_request_handler)(http_connection *connection, http_request & request, http_response & response, variant_map & session, mvc_view_data & viewData);
     typedef std::string (*webmvcpp_view_handler)(http_connection *connection, http_request & request, http_response & response, variant_map & session, mvc_view_data & viewData);
 
@@ -27,7 +27,7 @@ namespace webmvcpp
 
     #define set_masterpage_handler(fn) webmvcpp::gset_master_page_handler g_set_master_page_handler(fn);
 
-	#define controller_requests_handler(name, fn) webmvcpp::gset_controller_requests_handler g_set_controller_request_handler_##name(#name, fn);
+    #define controller_requests_handler(name, fn) webmvcpp::gset_controller_requests_handler g_set_controller_request_handler_##name(#name, fn);
 
     #define request_handler(controler, method, fn) webmvcpp::gadd_request_handler g_add_request_handler_##controler##method ("/"#controler"/"#method, fn);
 

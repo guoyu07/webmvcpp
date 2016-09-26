@@ -5,56 +5,56 @@
 namespace webmvcpp
 {   
     class application;
-	class session_manager;
+    class session_manager;
 
     struct http_request;
     struct http_response;
 
-	class webappconfig
-	{
-	public:
-		std::list<std::string> aliases;
-		std::string modulePath;
-		bool sessionsEnabled = false;
-		unsigned long sessionTimeout = 24;
-		std::string staticPath;
-		std::string webappPath;
+    class webappconfig
+    {
+    public:
+        std::list<std::string> aliases;
+        std::string modulePath;
+        bool sessionsEnabled = false;
+        unsigned long sessionTimeout = 24;
+        std::string staticPath;
+        std::string webappPath;
 
-		nlohmann::json rawObject;
-	};
+        nlohmann::json rawObject;
+    };
 
     class engine : public core_prototype
     {
     public:
-		engine() :
-		requestManager(this),
-		sessionManager(),
-		httpServer(this)
-		{
-			startTimestamp = std::time(NULL);
-			srand((unsigned int)std::time(NULL));
+        engine() :
+        requestManager(this),
+        sessionManager(),
+        httpServer(this)
+        {
+            startTimestamp = std::time(NULL);
+            srand((unsigned int)std::time(NULL));
 #if defined (_WIN32)
-			WSADATA wsaData;
-			WSAStartup(MAKEWORD(2, 2), &wsaData);
+            WSADATA wsaData;
+            WSAStartup(MAKEWORD(2, 2), &wsaData);
 #endif
-		}
+        }
 
-		const time_t get_start_timestamp() { return startTimestamp; }
+        const time_t get_start_timestamp() { return startTimestamp; }
 
-		static const char *get_service_name() { return "webmvcpp_service"; }
+        static const char *get_service_name() { return "webmvcpp_service"; }
 
 #if defined (_WIN32)
 
-		static SERVICE_STATUS & get_service_status() {
-			static SERVICE_STATUS serviceStatus = { 0 };
+        static SERVICE_STATUS & get_service_status() {
+            static SERVICE_STATUS serviceStatus = { 0 };
 
-			return serviceStatus;
-		}
-		static SERVICE_STATUS_HANDLE & get_service_status_handle() {
-			static SERVICE_STATUS_HANDLE serviceStatus = NULL;
+            return serviceStatus;
+        }
+        static SERVICE_STATUS_HANDLE & get_service_status_handle() {
+            static SERVICE_STATUS_HANDLE serviceStatus = NULL;
 
-			return serviceStatus;
-		}
+            return serviceStatus;
+        }
 #endif
         void display_version()
         {
@@ -102,480 +102,480 @@ namespace webmvcpp
             std::cout << "Success" << std::endl;
         }
 
-		void create_application(const std::string & appName)
-		{
-			builder webAppbuilder(appName);
-			webAppbuilder.create_application();
-		}
+        void create_application(const std::string & appName)
+        {
+            builder webAppbuilder(appName);
+            webAppbuilder.create_application();
+        }
 
-		bool load_web_application(const std::string & name, const std::list<std::string> & aliases,const std::string & modulePath, const std::string & webAppPath, const std::string & staticPath)
-		{
-			std::cout << "load module: " << modulePath;
-			webapplication_ptr mdl = new webapplication(modulePath.c_str(), webAppPath.c_str(), staticPath.c_str());
-			if (mdl->instance() != NULL)
-			{
-				std::cout << " success" << std::endl;
-				mdl->instance()->acceptCore(this);
-				webApps.insert(std::pair<std::string, webapplication_ptr>(name, mdl));
-				for (std::list<std::string>::const_iterator aliasesIt = aliases.begin(); aliasesIt != aliases.end(); ++aliasesIt)
-				{
-					webApps.insert(std::pair<std::string, webapplication_ptr>(*aliasesIt, mdl));
-				}
+        bool load_web_application(const std::string & name, const std::list<std::string> & aliases,const std::string & modulePath, const std::string & webAppPath, const std::string & staticPath)
+        {
+            std::cout << "load module: " << modulePath;
+            webapplication_ptr mdl = new webapplication(modulePath.c_str(), webAppPath.c_str(), staticPath.c_str());
+            if (mdl->instance() != NULL)
+            {
+                std::cout << " success" << std::endl;
+                mdl->instance()->acceptCore(this);
+                webApps.insert(std::pair<std::string, webapplication_ptr>(name, mdl));
+                for (std::list<std::string>::const_iterator aliasesIt = aliases.begin(); aliasesIt != aliases.end(); ++aliasesIt)
+                {
+                    webApps.insert(std::pair<std::string, webapplication_ptr>(*aliasesIt, mdl));
+                }
 
-				return true;
-			}
-			else {
-				std::cout << " fail" << std::endl;
-			}
+                return true;
+            }
+            else {
+                std::cout << " fail" << std::endl;
+            }
 
-			return false;
-		}
+            return false;
+        }
 
         bool init(const std::string & webapp)
-		{
-			sessionManager.enable(24 * 60 * 60);
+        {
+            sessionManager.enable(24 * 60 * 60);
 
-			std::string projectName = "undefined";
+            std::string projectName = "undefined";
 
-			std::ifstream configFile(webapp);
-			if (!configFile.is_open())
-				return false;
+            std::ifstream configFile(webapp);
+            if (!configFile.is_open())
+                return false;
 
-			configFile.seekg(0, configFile.end);
-			std::streamoff length = configFile.tellg();
-			configFile.seekg(0, configFile.beg);
+            configFile.seekg(0, configFile.end);
+            std::streamoff length = configFile.tellg();
+            configFile.seekg(0, configFile.beg);
 
-			std::string configString;
-			configString.resize((unsigned int)length);
-			configFile.read(&configString[0], length);
+            std::string configString;
+            configString.resize((unsigned int)length);
+            configFile.read(&configString[0], length);
 
-			const auto configRoot = json::parse(configString.c_str());
+            const auto configRoot = json::parse(configString.c_str());
 
-			const json::const_iterator projectNameIt = configRoot.find("projectName");
-			if (projectNameIt != configRoot.end()) {
-				const auto projectValue = projectNameIt.value();
-				projectName = projectValue.get<std::string>();
-			}
-			const json::const_iterator bindPortValueIt = configRoot.find("bindPort");
-			if (bindPortValueIt != configRoot.end()) {
-				const auto bindPortValue = bindPortValueIt.value();
-				bindPort = bindPortValue.get<unsigned short>();
-			}
-			json::const_iterator maxFormContentValueIt = configRoot.find("maxFormContentSize");
-			if (maxFormContentValueIt != configRoot.end()) {
-				const auto maxFormContentValue = maxFormContentValueIt.value();
-				maxFormContentSize = maxFormContentValue.get<unsigned long>();
-			}
-			json::const_iterator maxConnectionsValueIt = configRoot.find("maxConnections");
-			if (maxConnectionsValueIt != configRoot.end()) {
-				const auto maxConnectionsValue = maxConnectionsValueIt.value();
-				maxConnections = maxConnectionsValue.get<unsigned long>();
-			}
-			json::const_iterator connectionsPerIPValueIt = configRoot.find("connectionsPerIP");
-			if (connectionsPerIPValueIt != configRoot.end()) {
-				const auto connectionsPerIPValue = connectionsPerIPValueIt.value();
-				connectionsPerIp = connectionsPerIPValue.get<unsigned long>();
-			}
-			json::const_iterator reqestTimeoutValueIt = configRoot.find("reqestTimeout");
-			if (reqestTimeoutValueIt != configRoot.end()) {
-				const auto reqestTimeoutValue = reqestTimeoutValueIt.value();
-				requestTimeout = reqestTimeoutValue.get<unsigned long>();
-			}
-			json::const_iterator hostsIt = configRoot.find("hosts");
-			if (hostsIt != configRoot.end()) {
-				const auto hosts = hostsIt.value();
-				for (json::const_iterator hostsIt = hosts.begin(); hostsIt != hosts.end(); ++hostsIt) {
-					const std::string & webAppName = hostsIt.key();
-					const auto & webAppConfig = hostsIt.value();
+            const json::const_iterator projectNameIt = configRoot.find("projectName");
+            if (projectNameIt != configRoot.end()) {
+                const auto projectValue = projectNameIt.value();
+                projectName = projectValue.get<std::string>();
+            }
+            const json::const_iterator bindPortValueIt = configRoot.find("bindPort");
+            if (bindPortValueIt != configRoot.end()) {
+                const auto bindPortValue = bindPortValueIt.value();
+                bindPort = bindPortValue.get<unsigned short>();
+            }
+            json::const_iterator maxFormContentValueIt = configRoot.find("maxFormContentSize");
+            if (maxFormContentValueIt != configRoot.end()) {
+                const auto maxFormContentValue = maxFormContentValueIt.value();
+                maxFormContentSize = maxFormContentValue.get<unsigned long>();
+            }
+            json::const_iterator maxConnectionsValueIt = configRoot.find("maxConnections");
+            if (maxConnectionsValueIt != configRoot.end()) {
+                const auto maxConnectionsValue = maxConnectionsValueIt.value();
+                maxConnections = maxConnectionsValue.get<unsigned long>();
+            }
+            json::const_iterator connectionsPerIPValueIt = configRoot.find("connectionsPerIP");
+            if (connectionsPerIPValueIt != configRoot.end()) {
+                const auto connectionsPerIPValue = connectionsPerIPValueIt.value();
+                connectionsPerIp = connectionsPerIPValue.get<unsigned long>();
+            }
+            json::const_iterator reqestTimeoutValueIt = configRoot.find("reqestTimeout");
+            if (reqestTimeoutValueIt != configRoot.end()) {
+                const auto reqestTimeoutValue = reqestTimeoutValueIt.value();
+                requestTimeout = reqestTimeoutValue.get<unsigned long>();
+            }
+            json::const_iterator hostsIt = configRoot.find("hosts");
+            if (hostsIt != configRoot.end()) {
+                const auto hosts = hostsIt.value();
+                for (json::const_iterator hostsIt = hosts.begin(); hostsIt != hosts.end(); ++hostsIt) {
+                    const std::string & webAppName = hostsIt.key();
+                    const auto & webAppConfig = hostsIt.value();
 
-					webappconfig config;
+                    webappconfig config;
 
-					const json::const_iterator aliasesIt = webAppConfig.find("alias");
-					if (aliasesIt != webAppConfig.end()) {
-						const auto aliasesValue = aliasesIt.value();
-						for (json::const_iterator aliasIt = aliasesValue.begin(); aliasIt != aliasesValue.end(); ++aliasIt) {
-							const auto aliasObj = *aliasIt;
-							config.aliases.push_back(aliasObj.get<std::string>());
-						}
-					}
-					json::const_iterator moduleIt = webAppConfig.find("module");
-					if (moduleIt != webAppConfig.end()) {
-						const auto moduleValue = moduleIt.value();
-						config.modulePath = moduleValue.get<std::string>();
-					}
-					json::const_iterator sessionEnabledIt = webAppConfig.find("sessionsEnabled");
-					if (sessionEnabledIt != webAppConfig.end()) {
-						const auto sessionEnabledValue = sessionEnabledIt.value();
-						config.sessionsEnabled = sessionEnabledValue.get<bool>();
-					}
-					json::const_iterator sessionTimeoutIt = webAppConfig.find("sessionTimeout");
-					if (sessionTimeoutIt != webAppConfig.end()) {
-						const auto sessionTimeoutValue = sessionTimeoutIt.value();
-						config.sessionTimeout = sessionTimeoutValue.get<unsigned long>();
-					}
-					json::const_iterator staticPathIt = webAppConfig.find("staticPath");
-					if (staticPathIt != webAppConfig.end()) {
-						const auto staticPathValue = staticPathIt.value();
-						config.staticPath = staticPathValue.get<std::string>();
-					}
-					json::const_iterator webappPathPathIt = webAppConfig.find("webappPath");
-					if (webappPathPathIt != webAppConfig.end()) {
-						const auto webappPathPathValue = webappPathPathIt.value();
-						config.webappPath = webappPathPathValue.get<std::string>();
-					}
-					if (config.staticPath.length() == 0) {
-						config.staticPath = utils::get_parent_directory(config.modulePath) + "/static";
-					}
+                    const json::const_iterator aliasesIt = webAppConfig.find("alias");
+                    if (aliasesIt != webAppConfig.end()) {
+                        const auto aliasesValue = aliasesIt.value();
+                        for (json::const_iterator aliasIt = aliasesValue.begin(); aliasIt != aliasesValue.end(); ++aliasIt) {
+                            const auto aliasObj = *aliasIt;
+                            config.aliases.push_back(aliasObj.get<std::string>());
+                        }
+                    }
+                    json::const_iterator moduleIt = webAppConfig.find("module");
+                    if (moduleIt != webAppConfig.end()) {
+                        const auto moduleValue = moduleIt.value();
+                        config.modulePath = moduleValue.get<std::string>();
+                    }
+                    json::const_iterator sessionEnabledIt = webAppConfig.find("sessionsEnabled");
+                    if (sessionEnabledIt != webAppConfig.end()) {
+                        const auto sessionEnabledValue = sessionEnabledIt.value();
+                        config.sessionsEnabled = sessionEnabledValue.get<bool>();
+                    }
+                    json::const_iterator sessionTimeoutIt = webAppConfig.find("sessionTimeout");
+                    if (sessionTimeoutIt != webAppConfig.end()) {
+                        const auto sessionTimeoutValue = sessionTimeoutIt.value();
+                        config.sessionTimeout = sessionTimeoutValue.get<unsigned long>();
+                    }
+                    json::const_iterator staticPathIt = webAppConfig.find("staticPath");
+                    if (staticPathIt != webAppConfig.end()) {
+                        const auto staticPathValue = staticPathIt.value();
+                        config.staticPath = staticPathValue.get<std::string>();
+                    }
+                    json::const_iterator webappPathPathIt = webAppConfig.find("webappPath");
+                    if (webappPathPathIt != webAppConfig.end()) {
+                        const auto webappPathPathValue = webappPathPathIt.value();
+                        config.webappPath = webappPathPathValue.get<std::string>();
+                    }
+                    if (config.staticPath.length() == 0) {
+                        config.staticPath = utils::get_parent_directory(config.modulePath) + "/static";
+                    }
 
-					if (config.webappPath.length() == 0) {
-						config.webappPath = utils::get_parent_directory(config.modulePath) + "/webapp";
-					}
-					webApplicationConfigs.insert(std::pair<const std::string, webappconfig>(webAppName, config));
-				}
-			}
+                    if (config.webappPath.length() == 0) {
+                        config.webappPath = utils::get_parent_directory(config.modulePath) + "/webapp";
+                    }
+                    webApplicationConfigs.insert(std::pair<const std::string, webappconfig>(webAppName, config));
+                }
+            }
 
-			for (std::map<std::string, webappconfig>::iterator cIt = webApplicationConfigs.begin(); cIt != webApplicationConfigs.end(); ++cIt)
-			{
-				if (cIt->second.modulePath.length() == 0)
-					continue;
+            for (std::map<std::string, webappconfig>::iterator cIt = webApplicationConfigs.begin(); cIt != webApplicationConfigs.end(); ++cIt)
+            {
+                if (cIt->second.modulePath.length() == 0)
+                    continue;
 
-				load_web_application(cIt->first, cIt->second.aliases, cIt->second.modulePath, cIt->second.webappPath, cIt->second.staticPath);
-			}
+                load_web_application(cIt->first, cIt->second.aliases, cIt->second.modulePath, cIt->second.webappPath, cIt->second.staticPath);
+            }
 
-			return true;
-		}
+            return true;
+        }
 
 
-		bool start(bool runAsDaemon, int argc, char *args[])
-		{
-			if (runAsDaemon) {
-				return this->start_daemon(argc, args);
-			}
-			return httpServer.start_listening(bindPort, maxConnections, connectionsPerIp, requestTimeout);
-		}
+        bool start(bool runAsDaemon, int argc, char *args[])
+        {
+            if (runAsDaemon) {
+                return this->start_daemon(argc, args);
+            }
+            return httpServer.start_listening(bindPort, maxConnections, connectionsPerIp, requestTimeout);
+        }
 
-		void stop()
-		{
-		
-		}
+        void stop()
+        {
+        
+        }
 
         void application_unload(application *mvcApp) {
 
-		}
+        }
 
-		virtual mime_file_types_prototype *get_mime_types() { return &mimeTypes; }
-		virtual session_manager *get_session_manager() { return &sessionManager; }
+        virtual mime_file_types_prototype *get_mime_types() { return &mimeTypes; }
+        virtual session_manager *get_session_manager() { return &sessionManager; }
 
-		virtual bool process_request(http_server_connection *connection, http_request & request, http_response & response)
-		{
-			std::map<std::string, webapplication_ptr>::iterator it = webApps.find(request.host);
-			if (it == webApps.end())
-			{
-				http_error(403, "Forbidden", "Access to this host is forbidden by default").fill_response(response);
+        virtual bool process_request(http_server_connection *connection, http_request & request, http_response & response)
+        {
+            std::map<std::string, webapplication_ptr>::iterator it = webApps.find(request.host);
+            if (it == webApps.end())
+            {
+                http_error(403, "Forbidden", "Access to this host is forbidden by default").fill_response(response);
 
-				connection->send_response_header(response);
-				connection->send_response_content(response.content);
-				connection->end_response();
+                connection->send_response_header(response);
+                connection->send_response_content(response.content);
+                connection->end_response();
 
-				return false;
-			}
+                return false;
+            }
 
-			requestManager.process_request(it->second->instance(), connection, request, response);
+            requestManager.process_request(it->second->instance(), connection, request, response);
 
-			return true;
-		}
-		void build_applications()
-		{
-			for (std::map<std::string, webappconfig>::iterator cIt = webApplicationConfigs.begin(); cIt != webApplicationConfigs.end(); ++cIt) 
-			{
-				if (cIt->second.modulePath.length() == 0 && cIt->second.webappPath.length() != 0)
-				{
-					std::string buildedAppPath;
-					std::cout << "build application: " << cIt->first << std::endl;
-					if (build_application(cIt->first, cIt->second.webappPath, buildedAppPath)) {
-						cIt->second.modulePath = buildedAppPath;
-						std::cout << "application module: " << buildedAppPath << std::endl;
-					}
-				}
-			}
-		}
+            return true;
+        }
+        void build_applications()
+        {
+            for (std::map<std::string, webappconfig>::iterator cIt = webApplicationConfigs.begin(); cIt != webApplicationConfigs.end(); ++cIt) 
+            {
+                if (cIt->second.modulePath.length() == 0 && cIt->second.webappPath.length() != 0)
+                {
+                    std::string buildedAppPath;
+                    std::cout << "build application: " << cIt->first << std::endl;
+                    if (build_application(cIt->first, cIt->second.webappPath, buildedAppPath)) {
+                        cIt->second.modulePath = buildedAppPath;
+                        std::cout << "application module: " << buildedAppPath << std::endl;
+                    }
+                }
+            }
+        }
 
-		void load_applications()
-		{
-			for (std::map<std::string, webappconfig>::iterator cIt = webApplicationConfigs.begin(); cIt != webApplicationConfigs.end(); ++cIt)
-			{
-				if (cIt->second.modulePath.length() != 0 && cIt->second.webappPath.length() != 0)
-				{
-					std::string buildedAppPath;
-					std::cout << "load application: " << cIt->first << std::endl;
+        void load_applications()
+        {
+            for (std::map<std::string, webappconfig>::iterator cIt = webApplicationConfigs.begin(); cIt != webApplicationConfigs.end(); ++cIt)
+            {
+                if (cIt->second.modulePath.length() != 0 && cIt->second.webappPath.length() != 0)
+                {
+                    std::string buildedAppPath;
+                    std::cout << "load application: " << cIt->first << std::endl;
 
-					load_web_application(cIt->first, cIt->second.aliases, cIt->second.modulePath, cIt->second.webappPath, cIt->second.staticPath);
-				}
-			}
-		}
+                    load_web_application(cIt->first, cIt->second.aliases, cIt->second.modulePath, cIt->second.webappPath, cIt->second.staticPath);
+                }
+            }
+        }
 
-	private:
-		bool build_application(const std::string & appName, std::string & webAppPath, std::string & resultPath)
-		{
-			bool buildResult = true;
-			std::list<std::string> sourcefiles;
+    private:
+        bool build_application(const std::string & appName, std::string & webAppPath, std::string & resultPath)
+        {
+            bool buildResult = true;
+            std::list<std::string> sourcefiles;
 
-			builder webAppbuilder(appName, webAppPath);
+            builder webAppbuilder(appName, webAppPath);
 
-			DIR *webappDir = opendir(webAppPath.c_str());
-			if (!webappDir)
-				return false;
+            DIR *webappDir = opendir(webAppPath.c_str());
+            if (!webappDir)
+                return false;
 
-			webAppbuilder.generateViews(webAppPath + "/webmvcpp_views.cpp");
-			webAppbuilder.generateModels (webAppPath + "/webmvcpp_models.cpp");
-			webAppbuilder.generateControllers(webAppPath + "/webmvcpp_controllers.cpp");
+            webAppbuilder.generateViews(webAppPath + "/webmvcpp_views.cpp");
+            webAppbuilder.generateModels (webAppPath + "/webmvcpp_models.cpp");
+            webAppbuilder.generateControllers(webAppPath + "/webmvcpp_controllers.cpp");
 
-			while (dirent *entry = readdir(webappDir))
-			{
-				if (entry->d_type == DT_REG) {
+            while (dirent *entry = readdir(webappDir))
+            {
+                if (entry->d_type == DT_REG) {
 
-					std::vector<std::string> splittedFile = utils::split_string(entry->d_name, '.');
-					if (splittedFile.size() < 2)
-						continue;
-					std::string fileExtension = splittedFile[splittedFile.size() - 1];
-					if (fileExtension == "cpp" || fileExtension == "c")
-						sourcefiles.push_back(webAppPath + "/" + entry->d_name);
-				}
-			}
-			closedir(webappDir);
+                    std::vector<std::string> splittedFile = utils::split_string(entry->d_name, '.');
+                    if (splittedFile.size() < 2)
+                        continue;
+                    std::string fileExtension = splittedFile[splittedFile.size() - 1];
+                    if (fileExtension == "cpp" || fileExtension == "c")
+                        sourcefiles.push_back(webAppPath + "/" + entry->d_name);
+                }
+            }
+            closedir(webappDir);
 
-			std::string controllersPath = webAppPath + "/controllers";
+            std::string controllersPath = webAppPath + "/controllers";
 
-			DIR *controllersDir = opendir(controllersPath.c_str());
-			if (!controllersDir)
-				return false;
+            DIR *controllersDir = opendir(controllersPath.c_str());
+            if (!controllersDir)
+                return false;
 
-			while (dirent *entry = readdir(controllersDir))
-			{
-				if (entry->d_type == DT_REG) {
-					
-					std::vector<std::string> splittedFile = utils::split_string(entry->d_name, '.');
-					if (splittedFile.size() < 2)
-						continue;
-					std::string fileExtension = splittedFile[splittedFile.size() - 1];
-					if (fileExtension == "cpp" || fileExtension == "c")
-						sourcefiles.push_back(controllersPath + "/" + entry->d_name);
-				}
-			}
-			closedir(controllersDir);
+            while (dirent *entry = readdir(controllersDir))
+            {
+                if (entry->d_type == DT_REG) {
+                    
+                    std::vector<std::string> splittedFile = utils::split_string(entry->d_name, '.');
+                    if (splittedFile.size() < 2)
+                        continue;
+                    std::string fileExtension = splittedFile[splittedFile.size() - 1];
+                    if (fileExtension == "cpp" || fileExtension == "c")
+                        sourcefiles.push_back(controllersPath + "/" + entry->d_name);
+                }
+            }
+            closedir(controllersDir);
 
-			std::list<std::string> objFiles;
+            std::list<std::string> objFiles;
 
-			for (std::list<std::string>::iterator sourceIt = sourcefiles.begin(); sourceIt != sourcefiles.end(); ++sourceIt) {
-				
-				std::string result;
-				std::string tmpObjName = tmpnam(NULL);
-				if (!webAppbuilder.compile(*sourceIt, tmpObjName, result)) {
-					buildResult = false;
-					break;
-				}
+            for (std::list<std::string>::iterator sourceIt = sourcefiles.begin(); sourceIt != sourcefiles.end(); ++sourceIt) {
+                
+                std::string result;
+                std::string tmpObjName = tmpnam(NULL);
+                if (!webAppbuilder.compile(*sourceIt, tmpObjName, result)) {
+                    buildResult = false;
+                    break;
+                }
 
-				objFiles.push_back(tmpObjName);
-			}
+                objFiles.push_back(tmpObjName);
+            }
 
 #if defined (_WIN32)
-			
+            
 #else
-			
+            
 #endif
 
-			if (buildResult) {
-				std::string linkAppResult;
-				std::string webAppFile = webAppPath + "/" + appName;
+            if (buildResult) {
+                std::string linkAppResult;
+                std::string webAppFile = webAppPath + "/" + appName;
 #if defined (_WIN32)
-				webAppFile += ".dll";
-				std::string defFile = webAppPath + "/" + appName + ".def";
-				buildResult = webAppbuilder.linkApplication(objFiles, defFile, webAppFile, linkAppResult);
+                webAppFile += ".dll";
+                std::string defFile = webAppPath + "/" + appName + ".def";
+                buildResult = webAppbuilder.linkApplication(objFiles, defFile, webAppFile, linkAppResult);
 #else
-				webAppFile += ".so";
-				buildResult = webAppbuilder.linkApplication(objFiles, webAppFile, linkAppResult);
+                webAppFile += ".so";
+                buildResult = webAppbuilder.linkApplication(objFiles, webAppFile, linkAppResult);
 #endif
 
-				for (std::list<std::string>::const_iterator objIt = objFiles.begin(); objIt != objFiles.end(); ++objIt)
-				{
+                for (std::list<std::string>::const_iterator objIt = objFiles.begin(); objIt != objFiles.end(); ++objIt)
+                {
 #if defined (_WIN32)
-					::DeleteFileA(objIt->c_str());
+                    ::DeleteFileA(objIt->c_str());
 #else
-					remove(objIt->c_str());
+                    remove(objIt->c_str());
 #endif
-				}
+                }
 
-				if (buildResult)
-					resultPath = webAppFile;
-			}
+                if (buildResult)
+                    resultPath = webAppFile;
+            }
 
-			for (std::list<std::string>::const_iterator objIt = objFiles.begin(); objIt != objFiles.end(); ++objIt)
-			{
+            for (std::list<std::string>::const_iterator objIt = objFiles.begin(); objIt != objFiles.end(); ++objIt)
+            {
 #if defined (_WIN32)
-				::DeleteFileA(objIt->c_str());
+                ::DeleteFileA(objIt->c_str());
 #else
-				remove(objIt->c_str());
+                remove(objIt->c_str());
 #endif
-			}
+            }
 
-			return buildResult;
-		}
+            return buildResult;
+        }
 
-		bool start_daemon(int argc, char *args[])
-		{
+        bool start_daemon(int argc, char *args[])
+        {
 #if defined (_WIN32)
-			static SERVICE_STATUS serviceStatus = { 0 };
-			static SERVICE_STATUS_HANDLE statusHandle = NULL;
+            static SERVICE_STATUS serviceStatus = { 0 };
+            static SERVICE_STATUS_HANDLE statusHandle = NULL;
 
-			SERVICE_TABLE_ENTRYA ServiceTable[] =
-			{
-				{ (LPSTR)get_service_name(), (LPSERVICE_MAIN_FUNCTIONA)engine::service_main },
-				{ NULL, NULL }
-			};
+            SERVICE_TABLE_ENTRYA ServiceTable[] =
+            {
+                { (LPSTR)get_service_name(), (LPSERVICE_MAIN_FUNCTIONA)engine::service_main },
+                { NULL, NULL }
+            };
 
-			if (StartServiceCtrlDispatcherA(ServiceTable) == FALSE)
-			{
-				return false;
-			}
+            if (StartServiceCtrlDispatcherA(ServiceTable) == FALSE)
+            {
+                return false;
+            }
 #else
-			pid_t process_id = fork();
-			if (process_id < 0)
-			{
-				printf("fork failed!\n");
-				exit(1);
-			}
+            pid_t process_id = fork();
+            if (process_id < 0)
+            {
+                printf("fork failed!\n");
+                exit(1);
+            }
 
-			if (process_id > 0)
-			{
-				printf("process_id of child process %d \n", process_id);
-				// return success in exit status
-				exit(0);
-			}
+            if (process_id > 0)
+            {
+                printf("process_id of child process %d \n", process_id);
+                // return success in exit status
+                exit(0);
+            }
 
-			umask(0);
+            umask(0);
 
-			pid_t sid = setsid();
-			if (sid < 0)
-			{
-				exit(1);
-			}
+            pid_t sid = setsid();
+            if (sid < 0)
+            {
+                exit(1);
+            }
 
-			close(STDIN_FILENO);
-			close(STDOUT_FILENO);
-			close(STDERR_FILENO);
+            close(STDIN_FILENO);
+            close(STDOUT_FILENO);
+            close(STDERR_FILENO);
 
-			engine::service_worker_thread(this);
+            engine::service_worker_thread(this);
 #endif
-			return true;
-		}
+            return true;
+        }
 #if defined (_WIN32)
-		static void WINAPI service_ctrl_handler(DWORD ctrlCode)
-		{
-			switch (ctrlCode)
-			{
-			case SERVICE_CONTROL_STOP:
-			{
-				SERVICE_STATUS & serviceStatus = get_service_status();
+        static void WINAPI service_ctrl_handler(DWORD ctrlCode)
+        {
+            switch (ctrlCode)
+            {
+            case SERVICE_CONTROL_STOP:
+            {
+                SERVICE_STATUS & serviceStatus = get_service_status();
 
-				if (serviceStatus.dwCurrentState != SERVICE_RUNNING)
-					break;
+                if (serviceStatus.dwCurrentState != SERVICE_RUNNING)
+                    break;
 
-				serviceStatus.dwControlsAccepted = 0;
-				serviceStatus.dwCurrentState = SERVICE_STOP_PENDING;
-				serviceStatus.dwWin32ExitCode = 0;
-				serviceStatus.dwCheckPoint = 4;
+                serviceStatus.dwControlsAccepted = 0;
+                serviceStatus.dwCurrentState = SERVICE_STOP_PENDING;
+                serviceStatus.dwWin32ExitCode = 0;
+                serviceStatus.dwCheckPoint = 4;
 
-				::SetServiceStatus(get_service_status_handle(), &serviceStatus);
+                ::SetServiceStatus(get_service_status_handle(), &serviceStatus);
 
-				break;
-			}
-			default:
-				break;
-			}
-		}
+                break;
+            }
+            default:
+                break;
+            }
+        }
 
-		static VOID WINAPI service_main(DWORD argc, LPTSTR *argv)
-		{
-			DWORD status = E_FAIL;
+        static VOID WINAPI service_main(DWORD argc, LPTSTR *argv)
+        {
+            DWORD status = E_FAIL;
 
-			SERVICE_STATUS_HANDLE & statusHandle = get_service_status_handle();
-			// Register our service control handler with the SCM
-			statusHandle = RegisterServiceCtrlHandlerA(get_service_name(), service_ctrl_handler);
+            SERVICE_STATUS_HANDLE & statusHandle = get_service_status_handle();
+            // Register our service control handler with the SCM
+            statusHandle = RegisterServiceCtrlHandlerA(get_service_name(), service_ctrl_handler);
 
-			if (statusHandle == NULL)
-			{
-				printf("ServiceMain: RegisterServiceCtrlHandler returned error");
-			}
+            if (statusHandle == NULL)
+            {
+                printf("ServiceMain: RegisterServiceCtrlHandler returned error");
+            }
 
-			SERVICE_STATUS & serviceStatus = get_service_status();
+            SERVICE_STATUS & serviceStatus = get_service_status();
 
-			// Tell the service controller we are starting
-			memset(&serviceStatus, 0, sizeof(serviceStatus));
-			serviceStatus.dwServiceType = SERVICE_WIN32_OWN_PROCESS;
-			serviceStatus.dwControlsAccepted = 0;
-			serviceStatus.dwCurrentState = SERVICE_START_PENDING;
-			serviceStatus.dwWin32ExitCode = 0;
-			serviceStatus.dwServiceSpecificExitCode = 0;
-			serviceStatus.dwCheckPoint = 0;
+            // Tell the service controller we are starting
+            memset(&serviceStatus, 0, sizeof(serviceStatus));
+            serviceStatus.dwServiceType = SERVICE_WIN32_OWN_PROCESS;
+            serviceStatus.dwControlsAccepted = 0;
+            serviceStatus.dwCurrentState = SERVICE_START_PENDING;
+            serviceStatus.dwWin32ExitCode = 0;
+            serviceStatus.dwServiceSpecificExitCode = 0;
+            serviceStatus.dwCheckPoint = 0;
 
-			if (SetServiceStatus(statusHandle, &serviceStatus) == FALSE)
-			{
+            if (SetServiceStatus(statusHandle, &serviceStatus) == FALSE)
+            {
 
-			}
+            }
 
-			serviceStatus.dwControlsAccepted = SERVICE_ACCEPT_STOP;
-			serviceStatus.dwCurrentState = SERVICE_RUNNING;
-			serviceStatus.dwWin32ExitCode = 0;
-			serviceStatus.dwCheckPoint = 0;
+            serviceStatus.dwControlsAccepted = SERVICE_ACCEPT_STOP;
+            serviceStatus.dwCurrentState = SERVICE_RUNNING;
+            serviceStatus.dwWin32ExitCode = 0;
+            serviceStatus.dwCheckPoint = 0;
 
-			::SetServiceStatus(statusHandle, &serviceStatus);
+            ::SetServiceStatus(statusHandle, &serviceStatus);
 
-			HANDLE hThread = CreateThread(NULL, 0, service_worker_thread, NULL, 0, NULL);
+            HANDLE hThread = CreateThread(NULL, 0, service_worker_thread, NULL, 0, NULL);
 
-			::WaitForSingleObject(hThread, INFINITE);
+            ::WaitForSingleObject(hThread, INFINITE);
 
-			// Tell the service controller we are stopped
-			serviceStatus.dwControlsAccepted = 0;
-			serviceStatus.dwCurrentState = SERVICE_STOPPED;
-			serviceStatus.dwWin32ExitCode = 0;
-			serviceStatus.dwCheckPoint = 3;
+            // Tell the service controller we are stopped
+            serviceStatus.dwControlsAccepted = 0;
+            serviceStatus.dwCurrentState = SERVICE_STOPPED;
+            serviceStatus.dwWin32ExitCode = 0;
+            serviceStatus.dwCheckPoint = 3;
 
-			if (SetServiceStatus(statusHandle, &serviceStatus) == FALSE)
-			{
-				printf("ServiceMain: SetServiceStatus returned error");
-			}
+            if (SetServiceStatus(statusHandle, &serviceStatus) == FALSE)
+            {
+                printf("ServiceMain: SetServiceStatus returned error");
+            }
 
-			return;
-		}
+            return;
+        }
 #endif
 #if defined (_WIN32)
-		static unsigned long WINAPI service_worker_thread(void *lpParam)
+        static unsigned long WINAPI service_worker_thread(void *lpParam)
 #else
-		static unsigned long service_worker_thread(void *lpParam)
+        static unsigned long service_worker_thread(void *lpParam)
 #endif
-		{
-			engine *webMvcCore = static_cast<engine *>(lpParam);
+        {
+            engine *webMvcCore = static_cast<engine *>(lpParam);
 
-			webMvcCore->start(false, 0, NULL);
+            webMvcCore->start(false, 0, NULL);
 
-			return 0;
-		}
-	    
+            return 0;
+        }
+        
         std::map<std::string, webapplication_ptr> webApps;
-		std::map<std::string, webappconfig> webApplicationConfigs;
+        std::map<std::string, webappconfig> webApplicationConfigs;
 
         request_manager requestManager;
-		session_manager sessionManager;
+        session_manager sessionManager;
         mime_file_types mimeTypes;
-		http_server httpServer;
+        http_server httpServer;
 
-		unsigned short bindPort = 8081;
-		unsigned long maxFormContentSize = 1 * 1024 * 1024;
-		unsigned long maxConnections = 1000;
-		unsigned long connectionsPerIp = 100;
-		unsigned long requestTimeout = 30;
+        unsigned short bindPort = 8081;
+        unsigned long maxFormContentSize = 1 * 1024 * 1024;
+        unsigned long maxConnections = 1000;
+        unsigned long connectionsPerIp = 100;
+        unsigned long requestTimeout = 30;
 
-		time_t startTimestamp;
+        time_t startTimestamp;
         std::map<std::string, std::string> routeMap;
     };
 }

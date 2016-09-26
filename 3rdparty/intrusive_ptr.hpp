@@ -13,7 +13,7 @@
 //  See http://www.boost.org/libs/smart_ptr/intrusive_ptr.html for documentation.
 //
 
-#define BOOST_WORKAROUND(symbol, test)	0
+#define BOOST_WORKAROUND(symbol, test)    0
 
 //#include <boost/assert.hpp>
 //#include <boost/detail/workaround.hpp>

@@ -41,7 +41,7 @@ bool appendFileToContent(const char *sourceFilePath, std::ostream & content)
     std::ifstream sourceFile(sourceFilePath);
     if (!sourceFile.is_open()) {
         std::cout << "Error: cant open file: " << sourceFilePath << std::endl;
-    	return false;
+        return false;
     }
 
     std::string codeLine;
@@ -63,7 +63,7 @@ int main()
     std::vector<std::string> headers_hpp;
     headers_hpp.push_back("src/declarations.h");
 #ifdef _WIN32
-	headers_hpp.push_back("3rdparty/dirent_win32.h");
+    headers_hpp.push_back("3rdparty/dirent_win32.h");
 #endif
     headers_hpp.push_back("3rdparty/intrusive_ptr.hpp");
     headers_hpp.push_back("3rdparty/json.hpp");

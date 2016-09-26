@@ -7,8 +7,8 @@ namespace webmvcpp
     {
         http_response()
         {
-		    clear();
-	    }
+            clear();
+        }
 
         void clear()
         {
@@ -26,7 +26,7 @@ namespace webmvcpp
         std::string status;
         std::string contentType;
 
-	    http_values header;
+        http_values header;
 
         bool isCompressed;
         bool isKeepAlive;

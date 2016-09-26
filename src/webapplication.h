@@ -14,13 +14,13 @@ namespace webmvcpp
 
         webmvcpp_check_authorized_fn checkAuthorized;
 
-		webmvcpp_request_handler masterPageHandler;
+        webmvcpp_request_handler masterPageHandler;
 
         std::map<std::string, webmvcpp_view_handler> views;
-		std::set<std::string> controllers;
-		std::map<std::string, std::map<std::string, request_model>> models;
+        std::set<std::string> controllers;
+        std::map<std::string, std::map<std::string, request_model>> models;
         std::map<std::string, webmvcpp_request_handler> requests;
-		std::map<std::string, webmvcpp_controller_requests_handler> controllerRequests;
+        std::map<std::string, webmvcpp_controller_requests_handler> controllerRequests;
 
         static mvc_handlers *g;
         static mvc_handlers *global() {
@@ -30,60 +30,60 @@ namespace webmvcpp
             return g;
         };
 
-		~mvc_handlers() {}
+        ~mvc_handlers() {}
     };
 
-	#define WEBMVC_VIEWDATA "<webmvcpp:content:"
-	#define WEBMVC_VIEWDATA_CLOSED "</webmvcpp:content:"
-	#define WEBMVC_VIEWCONTROL "<webmvc:control:"
-	#define WEBMVC_VIEWCONTROL_CLOSED "</webmvc:control:"
-	#define WEBMVC_CLOSEBLOCK_END " />"
-	#define WEBMVC_BLOCK_END ">"
+    #define WEBMVC_VIEWDATA "<webmvcpp:content:"
+    #define WEBMVC_VIEWDATA_CLOSED "</webmvcpp:content:"
+    #define WEBMVC_VIEWCONTROL "<webmvc:control:"
+    #define WEBMVC_VIEWCONTROL_CLOSED "</webmvc:control:"
+    #define WEBMVC_CLOSEBLOCK_END " />"
+    #define WEBMVC_BLOCK_END ">"
 
 
     class application
     {
 
     public:
-		application() {}
-		virtual ~application() {}
+        application() {}
+        virtual ~application() {}
 
-		virtual void start() {}
-		virtual void stop() {}
+        virtual void start() {}
+        virtual void stop() {}
 
         void acceptCore(core_prototype *c){ mvcCore = c; }
 
-		virtual bool init(const std::string & w, const std::string & s)
-		{
-			webappPath = w;
-			staticPath = s;
+        virtual bool init(const std::string & w, const std::string & s)
+        {
+            webappPath = w;
+            staticPath = s;
 
-			return true;
-		}
+            return true;
+        }
 
         mvc_handlers *handlers = mvc_handlers::global();
         
         std::string webappPath;
         std::string staticPath;
 
-		core_prototype *mvcCore;
+        core_prototype *mvcCore;
 
         std::map<std::string, std::string> routeMap;
 
-		void add_route(const std::string & path, const std::string & newPath)
-		{
-			routeMap.insert(std::pair<std::string, std::string>(path, newPath));
-		}
+        void add_route(const std::string & path, const std::string & newPath)
+        {
+            routeMap.insert(std::pair<std::string, std::string>(path, newPath));
+        }
 
-		bool redirect_to(http_response & response, const std::string & url)
-		{
-			response.status = "302 found";
-			response.header.insert(std::pair<std::string, std::string>("Location", url));
+        bool redirect_to(http_response & response, const std::string & url)
+        {
+            response.status = "302 found";
+            response.header.insert(std::pair<std::string, std::string>("Location", url));
 
-			return true;
-		}
+            return true;
+        }
 
-	private:
+    private:
 
     };
     
@@ -138,15 +138,15 @@ namespace webmvcpp
         }
     };
 
-	class gset_controller_requests_handler
-	{
-		gset_controller_requests_handler();
-	public:
-		gset_controller_requests_handler(const std::string & name, webmvcpp_controller_requests_handler fn)
-		{
-			webmvcpp::mvc_handlers::global()->controllerRequests.insert(std::pair<std::string, webmvcpp_controller_requests_handler>(name, fn));
-		}
-	};
+    class gset_controller_requests_handler
+    {
+        gset_controller_requests_handler();
+    public:
+        gset_controller_requests_handler(const std::string & name, webmvcpp_controller_requests_handler fn)
+        {
+            webmvcpp::mvc_handlers::global()->controllerRequests.insert(std::pair<std::string, webmvcpp_controller_requests_handler>(name, fn));
+        }
+    };
 
     class gset_master_page_handler
     {
@@ -178,133 +178,133 @@ namespace webmvcpp
         }
     };
 
-	class gadd_controller
-	{
-		gadd_controller();
-	public:
-		gadd_controller(const std::string & name)
-		{
-			webmvcpp::mvc_handlers::global()->controllers.insert(name);
-		}
-	};
+    class gadd_controller
+    {
+        gadd_controller();
+    public:
+        gadd_controller(const std::string & name)
+        {
+            webmvcpp::mvc_handlers::global()->controllers.insert(name);
+        }
+    };
 
-	class gadd_request_model
-	{
-		gadd_request_model();
-	public:
-		gadd_request_model(const std::string & name, const json & reqstsModel)
-		{
-			std::map<std::string, request_model> reqModelMap;
+    class gadd_request_model
+    {
+        gadd_request_model();
+    public:
+        gadd_request_model(const std::string & name, const json & reqstsModel)
+        {
+            std::map<std::string, request_model> reqModelMap;
 
-			for (json::const_iterator it = reqstsModel.begin(); it != reqstsModel.end(); ++it)
-			{
-				const std::string & methodName = it.key();
-				const json & methodObj = it.value();
+            for (json::const_iterator it = reqstsModel.begin(); it != reqstsModel.end(); ++it)
+            {
+                const std::string & methodName = it.key();
+                const json & methodObj = it.value();
 
-				for (json::const_iterator methodsIt = methodObj.begin(); methodsIt != methodObj.end(); ++methodsIt)
-				{
-					const std::string & reqTypeName = methodsIt.key();
+                for (json::const_iterator methodsIt = methodObj.begin(); methodsIt != methodObj.end(); ++methodsIt)
+                {
+                    const std::string & reqTypeName = methodsIt.key();
 
-					if (reqTypeName == "GET")
-					{
-						request_model reqModel;
+                    if (reqTypeName == "GET")
+                    {
+                        request_model reqModel;
 
-						const json & reqModelObj = methodsIt.value();
+                        const json & reqModelObj = methodsIt.value();
 
-						for (json::const_iterator mdlIt = reqModelObj.begin(); mdlIt != reqModelObj.end(); ++mdlIt)
-						{
-							const std::string & mdlProperty = mdlIt.key();
+                        for (json::const_iterator mdlIt = reqModelObj.begin(); mdlIt != reqModelObj.end(); ++mdlIt)
+                        {
+                            const std::string & mdlProperty = mdlIt.key();
 
-							if (mdlProperty == MVCPP_MODEL_KEY_FLAGS)
-							{
-								const json & flags = mdlIt.value();
-								for (json::const_iterator flagIt = flags.begin(); flagIt != flags.end(); ++flagIt)
-								{
-									const json propertyValue = *flagIt;
-									if (propertyValue.is_string()) {
-										reqModel.flags.insert(propertyValue.get<std::string>());
-									}
-								}
-							}
-							else if (mdlProperty == MVCPP_MODEL_KEY_QUERY_STRING)
-							{
-								const json & keys = mdlIt.value();
-								for (json::const_iterator keysIt = keys.begin(); keysIt != keys.end(); ++keysIt)
-								{
-									const json propertyValue = *keysIt;
-									if (propertyValue.is_string()) {
-										reqModel.queryString.push_back(propertyValue.get<std::string>());
-									}
-								}
-							}
-						}
+                            if (mdlProperty == MVCPP_MODEL_KEY_FLAGS)
+                            {
+                                const json & flags = mdlIt.value();
+                                for (json::const_iterator flagIt = flags.begin(); flagIt != flags.end(); ++flagIt)
+                                {
+                                    const json propertyValue = *flagIt;
+                                    if (propertyValue.is_string()) {
+                                        reqModel.flags.insert(propertyValue.get<std::string>());
+                                    }
+                                }
+                            }
+                            else if (mdlProperty == MVCPP_MODEL_KEY_QUERY_STRING)
+                            {
+                                const json & keys = mdlIt.value();
+                                for (json::const_iterator keysIt = keys.begin(); keysIt != keys.end(); ++keysIt)
+                                {
+                                    const json propertyValue = *keysIt;
+                                    if (propertyValue.is_string()) {
+                                        reqModel.queryString.push_back(propertyValue.get<std::string>());
+                                    }
+                                }
+                            }
+                        }
 
-						reqModelMap.insert(std::pair<std::string, request_model>(reqTypeName, reqModel));
-					}
-					else if (reqTypeName == "POST")
-					{
-						request_model reqModel;
-						const json & reqModelObj = methodsIt.value();
+                        reqModelMap.insert(std::pair<std::string, request_model>(reqTypeName, reqModel));
+                    }
+                    else if (reqTypeName == "POST")
+                    {
+                        request_model reqModel;
+                        const json & reqModelObj = methodsIt.value();
 
-						for (json::const_iterator mdlIt = reqModelObj.begin(); mdlIt != reqModelObj.end(); ++mdlIt)
-						{
-							const std::string & mdlProperty = mdlIt.key();
+                        for (json::const_iterator mdlIt = reqModelObj.begin(); mdlIt != reqModelObj.end(); ++mdlIt)
+                        {
+                            const std::string & mdlProperty = mdlIt.key();
 
-							if (mdlProperty == MVCPP_MODEL_KEY_FLAGS)
-							{
-								const json & flags = *mdlIt;
-								for (json::const_iterator flagIt = flags.begin(); flagIt != flags.end(); ++flagIt)
-								{
-									const json propertyValue = *flagIt;
-									if (propertyValue.is_string()) {
-										reqModel.flags.insert(propertyValue.get<std::string>());
-									}
-								}
-							}
-							else if (mdlProperty == MVCPP_MODEL_KEY_CONTENT_TYPE)
-							{
-								const json propertyValue = mdlIt.value();
-								if (propertyValue.is_string()) {
-									reqModel.contentType = propertyValue.get<std::string>();
-								}
-							}
-							else if (mdlProperty == MVCPP_MODEL_KEY_QUERY_STRING)
-							{
-								const json keys = mdlIt.value();
-								for (json::const_iterator keysIt = keys.begin(); keysIt != keys.end(); ++keysIt)
-								{
-									const json propertyValue = keysIt.value();
-									if (propertyValue.is_string()) {
-										reqModel.queryString.push_back(propertyValue.get<std::string>());
-									}
-								}
-							}
-							else if (mdlProperty == MVCPP_MODEL_KEY_BODY_ENCODED_PARAMS)
-							{
-								const json keys = mdlIt.value();
-								for (json::const_iterator keysIt = keys.begin(); keysIt != keys.end(); ++keysIt)
-								{
-									const json propertyValue = keysIt.value();
-									if (propertyValue.is_string()) {
-										reqModel.bodyUrlEncodedParams.push_back(propertyValue.get<std::string>());
-									}
-								}
-							}
-						}
+                            if (mdlProperty == MVCPP_MODEL_KEY_FLAGS)
+                            {
+                                const json & flags = *mdlIt;
+                                for (json::const_iterator flagIt = flags.begin(); flagIt != flags.end(); ++flagIt)
+                                {
+                                    const json propertyValue = *flagIt;
+                                    if (propertyValue.is_string()) {
+                                        reqModel.flags.insert(propertyValue.get<std::string>());
+                                    }
+                                }
+                            }
+                            else if (mdlProperty == MVCPP_MODEL_KEY_CONTENT_TYPE)
+                            {
+                                const json propertyValue = mdlIt.value();
+                                if (propertyValue.is_string()) {
+                                    reqModel.contentType = propertyValue.get<std::string>();
+                                }
+                            }
+                            else if (mdlProperty == MVCPP_MODEL_KEY_QUERY_STRING)
+                            {
+                                const json keys = mdlIt.value();
+                                for (json::const_iterator keysIt = keys.begin(); keysIt != keys.end(); ++keysIt)
+                                {
+                                    const json propertyValue = keysIt.value();
+                                    if (propertyValue.is_string()) {
+                                        reqModel.queryString.push_back(propertyValue.get<std::string>());
+                                    }
+                                }
+                            }
+                            else if (mdlProperty == MVCPP_MODEL_KEY_BODY_ENCODED_PARAMS)
+                            {
+                                const json keys = mdlIt.value();
+                                for (json::const_iterator keysIt = keys.begin(); keysIt != keys.end(); ++keysIt)
+                                {
+                                    const json propertyValue = keysIt.value();
+                                    if (propertyValue.is_string()) {
+                                        reqModel.bodyUrlEncodedParams.push_back(propertyValue.get<std::string>());
+                                    }
+                                }
+                            }
+                        }
 
-						reqModelMap.insert(std::pair<std::string, request_model>(reqTypeName, reqModel));
-					}
-					else
-						continue;
+                        reqModelMap.insert(std::pair<std::string, request_model>(reqTypeName, reqModel));
+                    }
+                    else
+                        continue;
 
-					std::ostringstream requestPath;
-					requestPath << "/" << name << "/" << methodName;
+                    std::ostringstream requestPath;
+                    requestPath << "/" << name << "/" << methodName;
 
-					webmvcpp::mvc_handlers::global()->models.insert(std::pair<std::string, std::map<std::string, request_model>>(requestPath.str(), reqModelMap));
-				}
-			}
-		}
-	};
+                    webmvcpp::mvc_handlers::global()->models.insert(std::pair<std::string, std::map<std::string, request_model>>(requestPath.str(), reqModelMap));
+                }
+            }
+        }
+    };
 }
 
 #endif // WEBMVCPP_APPLICATION_MODULE_H

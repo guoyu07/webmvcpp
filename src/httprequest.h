@@ -8,7 +8,7 @@ namespace webmvcpp
     struct multypart_entry
     {
         http_values headers;
-	    std::vector<unsigned char> content;
+        std::vector<unsigned char> content;
 
         void clear()
         {
@@ -23,8 +23,8 @@ namespace webmvcpp
     {
         http_request()
         {
-		    clear();
-	    }
+            clear();
+        }
 
         void clear()
         {
@@ -51,7 +51,7 @@ namespace webmvcpp
             postParams.clear();
             multipartData.clear();
 
-		    header.clear();
+            header.clear();
 
             content.clear();
         }
@@ -75,9 +75,9 @@ namespace webmvcpp
         std::string referer;
         std::string userAgent;
 
-	    std::pair<std::string, std::string> authRealm;
+        std::pair<std::string, std::string> authRealm;
 
-	    http_values getParams;
+        http_values getParams;
         http_values postParams;
         http_multypart_values multipartData;
 
