@@ -1,5 +1,6 @@
 #!/bin/bash
 
+rm ./webmvcpp
 buildNumber=$(git rev-list --count HEAD)
 echo "#define WEBMVCPP_BUILD_NUMBER $buildNumber" > ./src/buildinfo.h
 if test -x "$(type -p clang)"; then 

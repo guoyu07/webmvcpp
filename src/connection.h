@@ -20,11 +20,24 @@ namespace webmvcpp
 			recvBuffer.resize(16 * 1024);
 		}
 
-                void end_response()
+        void end_response()
 		{
 			::send(socketDescriptor, "0\r\n\r\n", 5, sendDataFlags);
 		}
 
+		void close()
+		{
+			if (socketDescriptor != -1)
+			{
+#ifdef _WIN32
+				::closesocket(socketDescriptor);
+#else
+				::close(socketDescriptor);
+#endif
+				socketDescriptor = -1;
+			}
+
+		}
 
 		bool
 		read_stream(std::vector<unsigned char> & streamData)

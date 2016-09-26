@@ -7,10 +7,12 @@ namespace webmvcpp
     {
         http_server_connection();
     public:
-		http_server_connection(core_prototype *c, int socket):
-                http_connection(socket),
+		http_server_connection(core_prototype *c, http_server_prototype *s, unsigned long ipAddr, int socket):
+        http_connection(socket),
+		ipAddress(ipAddr),
 		httpReqParser(request),
-		mvcCore(c)
+		mvcCore(c),
+		httpServer(s)
 		{
 
 		}
@@ -41,14 +43,11 @@ namespace webmvcpp
 				}
 			} while (request.isKeepAlive);
 
-#ifdef _WIN32
-			::closesocket(socketDescriptor);
-#else
-			::close(socketDescriptor);
-#endif
+
+			close();
 		}
 
-                bool
+        bool
 		wait_for_header()
 		{
 			while (!httpReqParser.is_header_received())
@@ -86,15 +85,19 @@ namespace webmvcpp
 			return true;
 		}
 
-	core_prototype *mvc_core() { return mvcCore; }
+		unsigned long get_ip_address() { return ipAddress; }
+		core_prototype *mvc_core() { return mvcCore; }
+		http_server_prototype *http_server() { return httpServer; }
 
     private:
+		unsigned long ipAddress;
         http_request request;
         http_response response;
 
         http_request_parser httpReqParser;
 
-	core_prototype *mvcCore;
+		core_prototype *mvcCore;
+		http_server_prototype *httpServer;
     };
 }
 

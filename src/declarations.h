@@ -11,6 +11,7 @@
 #include <sstream>
 #include <fstream>
 #include <streambuf>
+#include <condition_variable>
 #include <mutex>
 #include <thread>
 #include <locale>

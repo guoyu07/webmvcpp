@@ -40,7 +40,6 @@ extern "C" {
 
 
 #include "src/applicationloader.h"
-#include "src/connectionthread.h"
 #include "src/server.h"
 #include "src/builder.h"
 #include "src/engine.h"
@@ -97,7 +96,7 @@ int main(int argc, char *args[])
 		else if ((strcmp(p, "-C") == 0 || strcmp(p, "--create") == 0) && i + 1 < argc)
 		{
 			std::string appName = args[i + 1];
-
+                        mvcEngine.create_application(appName);
 		}
 		else {
 			webApp = p;

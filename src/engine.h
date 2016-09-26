@@ -56,52 +56,57 @@ namespace webmvcpp
 			return serviceStatus;
 		}
 #endif
+        void display_version()
+        {
+            std::cout << "WebMVC++ Open Source Web Application Engine" << std::endl;
+            std::cout << "Version: 0.4." << WEBMVCPP_BUILD_NUMBER << " " << __DATE__ << " at " << __TIME__ << std::endl;
+            std::cout << "Compiler: " << WEBMVCPP_COMPILER_CPP << std::endl;
+        }
 
-                void display_version()
-                {
-                    std::cout << "WebMVC++ Open Source Web Application Engine" << std::endl;
-                    std::cout << "Version: 0.4." << WEBMVCPP_BUILD_NUMBER << " " << __DATE__ << " at " << __TIME__ << std::endl;
-                    std::cout << "Compiler: " << WEBMVCPP_COMPILER_CPP << std::endl;
-                }
-
-                void install()
-                {
-                    std::string srcPath = webmvcpp::systemutils::getApplicationPath();
-                    std::string targetPath;
+        void install()
+        {
+            std::string srcPath = webmvcpp::systemutils::getApplicationPath();
+            std::string targetPath;
 #ifdef _WIN32
-                    char sysDirBuffer[MAX_PATH];
-                    sysDirBuffer[GetSystemDirectoryA(sysDirBuffer, sizeof(sysDirBuffer))] = 0;
-                    targetPath = sysDirBuffer;
-                    targetPath += "\\webmvcpp.exe";
+            char sysDirBuffer[MAX_PATH];
+            sysDirBuffer[GetSystemDirectoryA(sysDirBuffer, sizeof(sysDirBuffer))] = 0;
+            targetPath = sysDirBuffer;
+            targetPath += "\\webmvcpp.exe";
 #else
-                    targetPath = "/usr/local/bin/webmvcpp";
+            targetPath = "/usr/local/bin/webmvcpp";
 #endif
-                    std::cout << "Installing " << srcPath << " to " << targetPath << std::endl;
-                    std::ifstream  src(srcPath, std::ios::binary);
-                    std::ofstream  dst(targetPath,  std::ios::binary);
+            std::cout << "Installing " << srcPath << " to " << targetPath << std::endl;
+            std::ifstream  src(srcPath, std::ios::binary);
+            std::ofstream  dst(targetPath,  std::ios::binary);
 #ifndef _WIN32
-                    chmod("/usr/local/bin/webmvcpp", S_IRWXU|S_IRWXG|S_IROTH|S_IWOTH);
+            chmod("/usr/local/bin/webmvcpp", S_IRWXU|S_IRWXG|S_IROTH|S_IWOTH);
 #endif
-                    dst << src.rdbuf() <<std::flush;
-                    std::cout << "Success" << std::endl;
-                    dst.close();
-                    src.close();
-               }
+            dst << src.rdbuf() <<std::flush;
+            std::cout << "Success" << std::endl;
+            dst.close();
+            src.close();
+        }
 
-               void uninstall()
-               {
+        void uninstall()
+        {
 #ifdef _WIN32
-                   std::string targetPath;
-                   char sysDirBuffer[MAX_PATH];
-                   sysDirBuffer[GetSystemDirectoryA(sysDirBuffer, sizeof(sysDirBuffer))] = 0;
-                   targetPath = sysDirBuffer;
-                   targetPath += "\\webmvcpp.exe";
-                   ::DeleteFileA(targetPath.c_str());
+            std::string targetPath;
+            char sysDirBuffer[MAX_PATH];
+            sysDirBuffer[GetSystemDirectoryA(sysDirBuffer, sizeof(sysDirBuffer))] = 0;
+            targetPath = sysDirBuffer;
+            targetPath += "\\webmvcpp.exe";
+            ::DeleteFileA(targetPath.c_str());
 #else
-                   ::remove("/usr/local/bin/webmvcpp");
+            ::remove("/usr/local/bin/webmvcpp");
 #endif
-                   std::cout << "Success" << std::endl;
-                }
+            std::cout << "Success" << std::endl;
+        }
+
+		void create_application(const std::string & appName)
+		{
+			builder webAppbuilder(appName);
+			webAppbuilder.create_application();
+		}
 
 		bool load_web_application(const std::string & name, const std::list<std::string> & aliases,const std::string & modulePath, const std::string & webAppPath, const std::string & staticPath)
 		{
@@ -159,7 +164,22 @@ namespace webmvcpp
 			json::const_iterator maxFormContentValueIt = configRoot.find("maxFormContentSize");
 			if (maxFormContentValueIt != configRoot.end()) {
 				const auto maxFormContentValue = maxFormContentValueIt.value();
-				maxFormContent = maxFormContentValue.get<unsigned long>();
+				maxFormContentSize = maxFormContentValue.get<unsigned long>();
+			}
+			json::const_iterator maxConnectionsValueIt = configRoot.find("maxConnections");
+			if (maxConnectionsValueIt != configRoot.end()) {
+				const auto maxConnectionsValue = maxConnectionsValueIt.value();
+				maxConnections = maxConnectionsValue.get<unsigned long>();
+			}
+			json::const_iterator connectionsPerIPValueIt = configRoot.find("connectionsPerIP");
+			if (connectionsPerIPValueIt != configRoot.end()) {
+				const auto connectionsPerIPValue = connectionsPerIPValueIt.value();
+				connectionsPerIp = connectionsPerIPValue.get<unsigned long>();
+			}
+			json::const_iterator reqestTimeoutValueIt = configRoot.find("reqestTimeout");
+			if (reqestTimeoutValueIt != configRoot.end()) {
+				const auto reqestTimeoutValue = reqestTimeoutValueIt.value();
+				requestTimeout = reqestTimeoutValue.get<unsigned long>();
 			}
 			json::const_iterator hostsIt = configRoot.find("hosts");
 			if (hostsIt != configRoot.end()) {
@@ -231,12 +251,15 @@ namespace webmvcpp
 			if (runAsDaemon) {
 				return this->start_daemon(argc, args);
 			}
-			return httpServer.start_listening(bindPort);
+			return httpServer.start_listening(bindPort, maxConnections, connectionsPerIp, requestTimeout);
 		}
 
-                void stop();
+		void stop()
+		{
+		
+		}
 
-                void application_unload(application *mvcApp) {
+        void application_unload(application *mvcApp) {
 
 		}
 
@@ -366,11 +389,8 @@ namespace webmvcpp
 				std::string webAppFile = webAppPath + "/" + appName;
 #if defined (_WIN32)
 				webAppFile += ".dll";
-				std::string defFile;
-				std::string tmpDefFile = tmpnam(NULL);
-				webAppbuilder.generateApplicationDef(tmpDefFile);
-				buildResult = webAppbuilder.linkApplication(objFiles, tmpDefFile, webAppFile, linkAppResult);
-				::DeleteFileA(tmpDefFile.c_str());
+				std::string defFile = webAppPath + "/" + appName + ".def";
+				buildResult = webAppbuilder.linkApplication(objFiles, defFile, webAppFile, linkAppResult);
 #else
 				webAppFile += ".so";
 				buildResult = webAppbuilder.linkApplication(objFiles, webAppFile, linkAppResult);
@@ -549,8 +569,11 @@ namespace webmvcpp
         mime_file_types mimeTypes;
 		http_server httpServer;
 
-		unsigned short bindPort = 8080;
-		unsigned long maxFormContent = 1 * 1024 * 1024;
+		unsigned short bindPort = 8081;
+		unsigned long maxFormContentSize = 1 * 1024 * 1024;
+		unsigned long maxConnections = 1000;
+		unsigned long connectionsPerIp = 100;
+		unsigned long requestTimeout = 30;
 
 		time_t startTimestamp;
         std::map<std::string, std::string> routeMap;
