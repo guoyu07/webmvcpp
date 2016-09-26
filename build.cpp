@@ -24,13 +24,13 @@ static const char* s_hexTable[256] =
 
 void codeLineToHex(const std::string & codeLine, std::ostream & content)
 {
-    content << "      ";
+    content << " ";
     for(unsigned int i = 0;i<codeLine.length();++i)
     {
         unsigned char hexValue = codeLine[i];
-        content << s_hexTable[hexValue] << ", ";
+        content << s_hexTable[hexValue] << ",";
     }
-    content << "0x0A, ";
+    content << "0x0A,";
     content << " \\" << std::endl;
 }
 
@@ -47,7 +47,7 @@ bool appendFileToContent(const char *sourceFilePath, std::ostream & content)
     std::string codeLine;
     while(std::getline(sourceFile,codeLine)){
       if (codeLine.length() == 0 || (codeLine.length()>10 && codeLine.substr(0, 10)=="#include \"")) {
-        content << "0x0D, 0x0A, ";
+        content << "0x0D, 0x0A,";
         content << " \\" << std::endl;
       }
       else {
@@ -85,11 +85,11 @@ int main()
     headers_hpp.push_back("src/sessionmanager.h");
 
     std::ofstream outputHeadersHppFile ("webmvcpp_headers_hpp_amalgamation.c", std::ofstream::out);
-    outputHeadersHppFile << "const char webmvcpp_headers_hpp_amalgamation[] = { \\" << std::endl;
+    outputHeadersHppFile << "const char webmvcpp_headers_hpp_amalgamation[]={\\" << std::endl;
     for(std::vector<std::string>::iterator it = headers_hpp.begin();it != headers_hpp.end();++it) {
         appendFileToContent((*it).c_str(), outputHeadersHppFile);
     }
-    outputHeadersHppFile << "      0x00 };";
+    outputHeadersHppFile << " 0x00 };";
     outputHeadersHppFile.close();
 
     return 0;
