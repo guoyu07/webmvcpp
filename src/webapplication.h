@@ -41,12 +41,12 @@ namespace webmvcpp
     #define WEBMVC_BLOCK_END ">"
 
 
-    class application
+    class webapplication
     {
 
     public:
-        application() {}
-        virtual ~application() {}
+        webapplication() {}
+        virtual ~webapplication() {}
 
         virtual void start() {}
         virtual void stop() {}

@@ -3,7 +3,7 @@
 
 namespace webmvcpp
 {
-    class application;
+    class webapplication;
 
     extern "C" {
 
@@ -12,10 +12,10 @@ namespace webmvcpp
         typedef void(*deinitModuleFn)();
     }
 
-    class webapplication
+    class webapplication_module
     {
     public:
-        webapplication(const char *mdlPath, const char *appPath, const char *staticPath)
+        webapplication_module(const char *mdlPath, const char *appPath, const char *staticPath)
         {
 #ifdef _WIN32
             moduleInstance = ::LoadLibraryA(mdlPath);
@@ -29,10 +29,10 @@ namespace webmvcpp
                 deinitModule = (deinitModuleFn)get_function("deinit_module");
 
                 initModule(appPath, staticPath);
-                appInstance = (application *)webmvcppInstance();
+                appInstance = (webapplication *)webmvcppInstance();
             }
         }
-        virtual ~webapplication()
+        virtual ~webapplication_module()
         {
             deinitModule();
 
@@ -46,7 +46,7 @@ namespace webmvcpp
             }
         }
 
-        application *
+        webapplication *
         instance()
         {
             return appInstance;
@@ -71,11 +71,11 @@ namespace webmvcpp
         webmvcppInstanceFn webmvcppInstance;
         deinitModuleFn deinitModule;
 
-        application *appInstance;
+        webapplication *appInstance;
         void *moduleInstance;
     };
 
-    typedef boost::intrusive_ptr<webapplication> webapplication_ptr;
+    typedef boost::intrusive_ptr<webapplication_module> webapplication_module_ptr;
 }
 
 #endif // WEBMVCPP_APPLICATION_CLIENT_H

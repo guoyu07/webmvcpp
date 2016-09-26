@@ -4,7 +4,7 @@
 
 namespace webmvcpp
 {   
-    class application;
+    class webapplication;
     class session_manager;
 
     struct http_request;
@@ -111,15 +111,15 @@ namespace webmvcpp
         bool load_web_application(const std::string & name, const std::list<std::string> & aliases,const std::string & modulePath, const std::string & webAppPath, const std::string & staticPath)
         {
             std::cout << "load module: " << modulePath;
-            webapplication_ptr mdl = new webapplication(modulePath.c_str(), webAppPath.c_str(), staticPath.c_str());
+            webapplication_module_ptr mdl = new webapplication_module(modulePath.c_str(), webAppPath.c_str(), staticPath.c_str());
             if (mdl->instance() != NULL)
             {
                 std::cout << " success" << std::endl;
                 mdl->instance()->acceptCore(this);
-                webApps.insert(std::pair<std::string, webapplication_ptr>(name, mdl));
+                webApps.insert(std::pair<std::string, webapplication_module_ptr>(name, mdl));
                 for (std::list<std::string>::const_iterator aliasesIt = aliases.begin(); aliasesIt != aliases.end(); ++aliasesIt)
                 {
-                    webApps.insert(std::pair<std::string, webapplication_ptr>(*aliasesIt, mdl));
+                    webApps.insert(std::pair<std::string, webapplication_module_ptr>(*aliasesIt, mdl));
                 }
 
                 return true;
@@ -259,7 +259,7 @@ namespace webmvcpp
         
         }
 
-        void application_unload(application *mvcApp) {
+        void application_unload(webapplication *mvcApp) {
 
         }
 
@@ -268,7 +268,7 @@ namespace webmvcpp
 
         virtual bool process_request(http_server_connection *connection, http_request & request, http_response & response)
         {
-            std::map<std::string, webapplication_ptr>::iterator it = webApps.find(request.host);
+            std::map<std::string, webapplication_module_ptr>::iterator it = webApps.find(request.host);
             if (it == webApps.end())
             {
                 http_error(403, "Forbidden", "Access to this host is forbidden by default").fill_response(response);
@@ -561,7 +561,7 @@ namespace webmvcpp
             return 0;
         }
         
-        std::map<std::string, webapplication_ptr> webApps;
+        std::map<std::string, webapplication_module_ptr> webApps;
         std::map<std::string, webappconfig> webApplicationConfigs;
 
         request_manager requestManager;

@@ -3,7 +3,7 @@
 
 namespace webmvcpp
 {
-    class application;
+    class webapplication;
 
     class request_manager
     {
@@ -15,7 +15,7 @@ namespace webmvcpp
         }
 
         void
-        process_request(application *mvcapp, http_server_connection *connection, http_request & request, http_response & response)
+        process_request(webapplication *mvcapp, http_server_connection *connection, http_request & request, http_response & response)
         {
             response.status = "200 OK";
 
@@ -40,7 +40,7 @@ namespace webmvcpp
         }
 
         void
-        send_static_file(application *webapp, http_connection *connection, http_request & request, http_response & response)
+        send_static_file(webapplication *webapp, http_connection *connection, http_request & request, http_response & response)
         {
             std::string filePath = webapp->staticPath + request.path;
 
@@ -139,7 +139,7 @@ namespace webmvcpp
         }
 
         bool
-        is_model_valid(application *mvcapp, http_connection *connection, http_request & request, session sessionContext, const std::map<std::string, request_model> & m)
+        is_model_valid(webapplication *mvcapp, http_connection *connection, http_request & request, session sessionContext, const std::map<std::string, request_model> & m)
         {
             std::map<std::string, request_model>::const_iterator it = m.find(request.method);
             if (it == m.end())
@@ -202,7 +202,7 @@ namespace webmvcpp
         }
 
         void
-        send_mvc_page(application *mvcapp, const std::string & controllerName, http_server_connection *connection, http_request & request, http_response & response)
+        send_mvc_page(webapplication *mvcapp, const std::string & controllerName, http_server_connection *connection, http_request & request, http_response & response)
         {
             response.contentType = "text/html";
 

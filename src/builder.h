@@ -65,7 +65,7 @@ namespace webmvcpp
             ofs << "#endif" << std::endl;
             ofs << "#include \"" << applicationName << ".h\"" << std::endl;
             ofs << std::endl;
-            ofs << "webmvcpp::application* Application = NULL;" << std::endl;
+            ofs << "webmvcpp::webapplication* Application = NULL;" << std::endl;
             ofs << std::endl;
             ofs << "namespace webmvcpp" << std::endl;
             ofs << "{" << std::endl;
@@ -140,13 +140,13 @@ namespace webmvcpp
             ofs << std::endl;
             ofs << "namespace webmvcpp" << std::endl;
             ofs << "{" << std::endl;
-            ofs << "    class " << applicationClassName << " : public application" << std::endl;
+            ofs << "    class " << applicationClassName << " : public webapplication" << std::endl;
             ofs << "    {" << std::endl;
             ofs << "    public:" << std::endl;
             ofs << "        virtual bool init(const std::string & w, const std::string & s)" << std::endl;
             ofs << "        {" << std::endl;
             ofs << "            add_route(\"/\", \"/main/index\");" << std::endl;
-            ofs << "            return application::init(w, s);" << std::endl;
+            ofs << "            return webapplication::init(w, s);" << std::endl;
             ofs << "        }" << std::endl;
             ofs << std::endl;
             ofs << "    protected:" << std::endl;
