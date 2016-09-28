@@ -21,6 +21,7 @@ namespace webmvcpp
         std::map<std::string, std::map<std::string, request_model>> models;
         std::map<std::string, webmvcpp_request_handler> requests;
         std::map<std::string, webmvcpp_controller_requests_handler> controllerRequests;
+        std::map<std::string, webmvcpp_service_handler> services;
 
         static mvc_handlers *g;
         static mvc_handlers *global() {
@@ -175,6 +176,16 @@ namespace webmvcpp
         gadd_view_handler(const std::string & url, webmvcpp_view_handler fn)
         {
             webmvcpp::mvc_handlers::global()->views.insert(std::pair<std::string, webmvcpp_view_handler>(url, fn));
+        }
+    };
+
+    class gadd_service_handler
+    {
+        gadd_service_handler();
+    public:
+        gadd_service_handler(const std::string & url, webmvcpp_service_handler fn)
+        {
+            webmvcpp::mvc_handlers::global()->services.insert(std::pair<std::string, webmvcpp_service_handler>(url, fn));
         }
     };
 
