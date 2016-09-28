@@ -46,11 +46,10 @@ namespace webmvcpp
 
             if (filePath.find("..") != std::string::npos)
             {
-                response.status = "400 Bad request";
-                response.contentType = "text/html";
+                error_page::generate(response, 403, "Bad request", "Access to this host is forbidden by default");
 
                 connection->send_response_header(response);
-                connection->send_response_content("<h2>Bad request</h2>");
+                connection->send_response_content(response.content);
                 return;
             }
 
@@ -59,11 +58,9 @@ namespace webmvcpp
             std::ifstream fs(filePath, std::ios::in | std::ios::binary);
             if (stat(filePath.c_str(), &info) != 0 || info.st_mode & S_IFDIR || !fs.is_open())
             {
-                response.status = "404 Not found";
-                response.contentType = "text/html";
-
+                error_page::generate(response, 404, "Not found", "Page not found");
                 connection->send_response_header(response);
-                connection->send_response_content("<h2>404 Not Found</h2>");
+                connection->send_response_content(response.content);
 
                 return;
             }
@@ -315,14 +312,14 @@ namespace webmvcpp
             {
                 std::lock_guard<std::mutex> locker(sessionContext->get_lock());
                 pageContent = viewHandlerIt->second(connection, request, response, sessionContext->get_data(), viewData);
+                connection->send_response_header(response);
+                connection->send_response_content(pageContent);
             }
             else {
-                response.status = "404 Not found";
-                pageContent = "<h2>404 Not Found</ h2>";
+                error_page::generate(response, 404, "Not found", "Page not found");
+                connection->send_response_header(response);
+                connection->send_response_content(response.content);
             }
-
-            connection->send_response_header(response);
-            connection->send_response_content(pageContent);
 
             return;
         }

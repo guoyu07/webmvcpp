@@ -3,19 +3,9 @@
 
 namespace webmvcpp
 {
-    class http_error
+    struct error_page
     {
-        http_error();
-        http_error(http_error &);
-        void operator=(http_error &);
-    public:
-        http_error(unsigned short error, const std::string & capt, const std::string & descr):
-        errorCode(error),
-        caption(capt),
-        description(descr)
-        {}
-
-        void fill_response(http_response & response)
+        static void generate(http_response & response, const unsigned int httpCode, const std::string & caption, const std::string & description)
         {
             std::ostringstream pageContent;
 
@@ -49,19 +39,20 @@ namespace webmvcpp
                 "    <p class='bpix'></p><p class='bpix'></p><p class='bpix'></p><p class='bpix'></p><p class='bpix'></p><p class='bpix'></p><p class='bpix'></p><p class='bpix'></p><p class='bpix'></p>" \
                 "  </div>" \
                 "  <div class='errmsg'>";
-            pageContent << "    <h2>" << errorCode << " " << caption << "</h2>";
+            pageContent << "    <h2>" << httpCode << " " << caption << "</h2>";
             pageContent << "    <h4>" + description + "</h4>";
             pageContent << "  </div>" \
                 "</div>" \
                 "<hr width='300px;' />" \
                 "<div class='productmsg'>" \
-                "<h5>WebMVCpp - Your C++ MVC Web Engine</h5>" \
+                "<h5>WebMVC++ Open Source Web Application Engine</h5>" \
+                "<h5>Version: " << WEBMVCPP_MAJOR_VERSION << "." << WEBMVCPP_MINOR_VERSION << "." << WEBMVCPP_BUILD_NUMBER << "</h5>" \
                 "</div>" \
                 "</body>" \
                 "</html>";
 
             std::ostringstream httpStatus;
-            httpStatus << errorCode << " " << caption;
+            httpStatus << httpCode << " " << caption;
             response.status = httpStatus.str();
 
             response.contentType = "text/html";
@@ -70,11 +61,6 @@ namespace webmvcpp
             response.content.resize(conntentLength);
             memcpy(&response.content.front(), pageContent.str().c_str(), conntentLength);
         }
-
-    private:
-        unsigned short errorCode;
-        std::string caption;
-        std::string description;
     };
 }
 

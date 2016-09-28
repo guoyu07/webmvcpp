@@ -269,6 +269,31 @@ namespace webmvcpp
 #endif
             return appPath;
         }
+
+#ifdef _WIN32
+        static bool create_thread(LPTHREAD_START_ROUTINE startAddress, void *threadCtx)
+#else
+        static bool create_thread(void* startAddress(void*), void *threadCtx)
+#endif
+        {
+            bool result = false;
+#ifdef _WIN32
+            DWORD threadId;
+            HANDLE hThread = ::CreateThread(NULL, 0, startAddress, threadCtx, 0, &threadId);
+            if (hThread != NULL)
+            {
+                ::CloseHandle(hThread);
+                result = true;
+            }
+#else
+            pthread_t threadId;
+            pthread_attr_t threadAttr;
+            pthread_attr_init(&threadAttr);
+            pthread_attr_setdetachstate(&threadAttr, PTHREAD_CREATE_DETACHED);
+            result = pthread_create(&threadId, &threadAttr, startAddress, threadCtx) == 0;
+#endif
+            return result;
+        }
     };
 }
 

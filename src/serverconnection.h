@@ -18,7 +18,7 @@ namespace webmvcpp
         }
 
         void
-        run()
+        exec()
         {
             do
             {
@@ -42,9 +42,6 @@ namespace webmvcpp
                     break;
                 }
             } while (request.isKeepAlive);
-
-
-            close();
         }
 
         bool

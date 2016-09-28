@@ -59,7 +59,7 @@ namespace webmvcpp
         void display_version()
         {
             std::cout << "WebMVC++ Open Source Web Application Engine" << std::endl;
-            std::cout << "Version: 0.4." << WEBMVCPP_BUILD_NUMBER << " " << __DATE__ << " at " << __TIME__ << std::endl;
+            std::cout << "Version: " << WEBMVCPP_MAJOR_VERSION << "." << WEBMVCPP_MINOR_VERSION << "." << WEBMVCPP_BUILD_NUMBER << " " << __DATE__ << " at " << __TIME__ << std::endl;
             std::cout << "Compiler: " << WEBMVCPP_COMPILER_CPP << std::endl;
         }
 
@@ -271,7 +271,7 @@ namespace webmvcpp
             std::map<std::string, webapplication_module_ptr>::iterator it = webApps.find(request.host);
             if (it == webApps.end())
             {
-                http_error(403, "Forbidden", "Access to this host is forbidden by default").fill_response(response);
+                error_page::generate(response, 403, "Forbidden", "Access to this host is forbidden by default");
 
                 connection->send_response_header(response);
                 connection->send_response_content(response.content);

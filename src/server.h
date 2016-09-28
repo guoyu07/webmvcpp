@@ -70,7 +70,6 @@ namespace webmvcpp
                     continue;
                 }
 
-                
                 while (running)
                 {
                     if (!is_new_connection_permited())
@@ -93,7 +92,7 @@ namespace webmvcpp
                     unsigned long ipAddr = cliAddr.sin_addr.s_addr;
                     http_server_connection *connection = new http_server_connection(mvcCore, this, ipAddr, clientSocket);
                     retain_connection(ipAddr, connection);
-                    if (!run_connection_thread_routine(connection))
+                    if (!systemutils::create_thread(connection_thread_routine, connection))
                     {
                         connection->close();
                         release_connection(ipAddr, connection);
@@ -105,28 +104,6 @@ namespace webmvcpp
             return true;
         }
 
-        bool
-        run_connection_thread_routine(http_server_connection *c)
-        {
-            bool result = false;
-#ifdef _WIN32
-            DWORD threadId;
-            HANDLE hThread = ::CreateThread(NULL, 0, connection_thread_routine, c, 0, &threadId);
-            if (hThread != NULL)
-            {
-                ::CloseHandle(hThread);
-                result = true;
-            }
-#else
-            pthread_t threadId;
-            pthread_attr_t threadAttr;
-            pthread_attr_init(&threadAttr);
-            pthread_attr_setdetachstate(&threadAttr, PTHREAD_CREATE_DETACHED);
-            result = pthread_create(&threadId, &threadAttr, connection_thread_routine, c) == 0;
-#endif
-            return result;
-        }
-
 #ifdef _WIN32
         static DWORD __stdcall
 #else
@@ -135,17 +112,16 @@ namespace webmvcpp
         connection_thread_routine(void *threadParam)
         {
             http_server_connection *connection = static_cast<http_server_connection *>(threadParam);
+            http_server_prototype *server = connection->http_server();
+            unsigned long ipAddress = connection->get_ip_address();
             std::unique_ptr<http_server_connection> threadCleaner(connection);
 
-            http_server_prototype *server = connection->http_server();
-
-            unsigned long ipAddress = connection->get_ip_address();
-
             if (server->is_connection_permitted(ipAddress))
-                connection->run();
-            else
-                connection->close();
+            {
+                connection->exec();
+            }
 
+            connection->close();
             server->release_connection(ipAddress, connection);
 
             return 0;
