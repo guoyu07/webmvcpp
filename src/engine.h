@@ -407,7 +407,9 @@ namespace webmvcpp
 
                 std::string result;
 #ifdef _WIN32
-                std::string tmpObjName = tmpnam(NULL);
+                char tmpFileNameBuffer[MAX_PATH];
+                tmpnam_s(tmpFileNameBuffer, sizeof(tmpFileNameBuffer));
+                std::string tmpObjName = tmpFileNameBuffer;
 #else
                 std::ostringstream tmpObjNameStrm;
                 tmpObjNameStrm << tmpDirectoryPath << "/" << ++fileNumber;

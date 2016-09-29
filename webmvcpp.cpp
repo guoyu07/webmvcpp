@@ -66,7 +66,7 @@ int main(int argc, char *args[])
 
     webmvcpp::engine mvcEngine;
 
-    for (unsigned int i = 0; i < argc; ++i)
+    for (int i = 0; i < argc; ++i)
     {
         char *p = args[i];
 

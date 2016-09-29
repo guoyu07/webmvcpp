@@ -561,7 +561,7 @@ namespace webmvcpp
                                 {
                                     std::ostringstream ctrlCode;
                                     ctrlCode << "{%{" << std::endl;
-                                    for (int i = 0; i < ctrlIt->second.parameters.size(); ++i)
+                                    for (unsigned int i = 0; i < ctrlIt->second.parameters.size(); ++i)
                                     {
                                         ctrlCode << "    std::string " << ctrlIt->second.parameters[i] << " = \"" << ctrlParams[i] << "\";" << std::endl;
                                     }
