@@ -5,7 +5,7 @@
 namespace webmvcpp
 {
     struct mvc_handlers{
-        
+
         webmvcpp_start_application_fn startApplication;
         webmvcpp_stop_application_fn stopApplication;
 
@@ -54,6 +54,11 @@ namespace webmvcpp
 
         void acceptCore(core_prototype *c){ mvcCore = c; }
 
+        virtual void log(const std::string &logMessage)
+        {
+            mvcCore->log(logMessage);
+        }
+
         virtual bool init(const std::string & w, const std::string & s)
         {
             webappPath = w;
@@ -63,7 +68,7 @@ namespace webmvcpp
         }
 
         mvc_handlers *handlers = mvc_handlers::global();
-        
+
         std::string webappPath;
         std::string staticPath;
 
@@ -87,7 +92,7 @@ namespace webmvcpp
     private:
 
     };
-    
+
     class gset_start_application_handler
     {
         gset_start_application_handler();

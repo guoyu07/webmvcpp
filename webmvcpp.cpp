@@ -52,18 +52,19 @@ int main(int argc, char *args[])
     std::string webApp;
 
     if (argc == 1) {
-        std::cout << "Use parameners:" << std::endl;
+        std::cout << "Use parameters:" << std::endl;
         std::cout << "    -D, --daemon\t\t Run as daemon" << std::endl;
         std::cout << "    -B, --build\t\t\t Build web application, arguments: <.webmvcpp file>" << std::endl;
         std::cout << "    -C, --create\t\t Create new web application, arguments: <name>" << std::endl;
-            std::cout << "    -I, --daemon\t\t Install" << std::endl;
-            std::cout << "    -U, --daemon\t\t Uninstall" << std::endl;
+        std::cout << "    -T, --test\t\t\t Test application config, arguments: <.webmvcpp file>" << std::endl;
+        std::cout << "    -I, --daemon\t\t Install" << std::endl;
+        std::cout << "    -U, --daemon\t\t Uninstall" << std::endl;
         std::cout << "    -V, --version\t\t Print version" << std::endl;
 
         return -1;
     }
 
-        webmvcpp::engine mvcEngine;
+    webmvcpp::engine mvcEngine;
 
     for (unsigned int i = 0; i < argc; ++i)
     {
@@ -71,8 +72,8 @@ int main(int argc, char *args[])
 
         if (strcmp(p, "-V") == 0 || strcmp(p, "--version") == 0)
         {
-                     mvcEngine.display_version();
-                     return 0;
+            mvcEngine.display_version();
+            return 0;
         }
         else if (strcmp(p, "-I") == 0 || strcmp(p, "--install") == 0)
         {
@@ -93,6 +94,12 @@ int main(int argc, char *args[])
         {
             buildOnly = true;
         }
+        else if ((strcmp(p, "-T") == 0 || strcmp(p, "--test") == 0) && i + 1 < argc)
+        {
+            std::string configFile = args[i + 1];
+            mvcEngine.test_configuration(configFile);
+            return 0;
+        }
         else if ((strcmp(p, "-C") == 0 || strcmp(p, "--create") == 0) && i + 1 < argc)
         {
             std::string appName = args[i + 1];
@@ -112,7 +119,7 @@ int main(int argc, char *args[])
     }
 
     mvcEngine.build_applications();
-    
+
     if (buildOnly)
         return 0;
 

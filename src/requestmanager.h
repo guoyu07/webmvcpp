@@ -24,6 +24,22 @@ namespace webmvcpp
             if (routeIt != routeMap.cend())
                 request.path = routeIt->second;
 
+            std::map<std::string, webmvcpp_service_handler>::iterator serviceIt = mvcapp->handlers->services.find(request.path);
+            if (serviceIt!=mvcapp->handlers->services.end())
+            {
+                if (serviceIt->second(request, response)){
+                    connection->send_response_header(response);
+                    connection->send_response_content(response.content); 
+                }
+                else {
+                    error_page::generate(response, 406, "Not Acceptable", "Not acceptable request");
+                    connection->send_response_header(response);
+                    connection->send_response_content(response.content);
+                }
+                connection->end_response();
+                return;
+            }
+
             std::vector<std::string> splittedPath = utils::split_string(request.path, '/');
 
             std::string controllerName = splittedPath.size()>2 ? splittedPath[1] : "";

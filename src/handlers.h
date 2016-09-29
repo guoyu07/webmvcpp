@@ -4,16 +4,16 @@
 namespace webmvcpp
 {
     typedef std::map<std::string, std::string> mvc_view_data;
-     
+
     typedef bool (*webmvcpp_start_application_fn)();
     typedef void (*webmvcpp_stop_application_fn)();
 
     typedef bool (*webmvcpp_create_session_fn)(const http_request & request, variant_map & sessionData);
-    typedef void (*webmvcpp_remove_session_fn)(variant_map & sessionData);
+    typedef void (*webmvcpp_remove_session_fn)(const variant_map & sessionData);
 
-    typedef bool (*webmvcpp_check_authorized_fn)(http_request & request, variant_map & session);
+    typedef bool (*webmvcpp_check_authorized_fn)(const http_request & request, variant_map & session);
 
-    typedef bool (*webmvcpp_service_handler)(http_request & request, http_response & response);
+    typedef bool (*webmvcpp_service_handler)(const http_request & request, http_response & response);
 
     typedef bool(*webmvcpp_controller_requests_handler)(http_connection *connection, http_request & request, http_response & response, variant_map & session);
     typedef bool (*webmvcpp_request_handler)(http_connection *connection, http_request & request, http_response & response, variant_map & session, mvc_view_data & viewData);
@@ -36,7 +36,7 @@ namespace webmvcpp
 
     #define view_handler(controler, method, fn) webmvcpp::gadd_view_handler g_add_view_handler_##controler##method ("/"#controler"/"#method, fn);
 
-    #define service_handler(url, fn) webmvcpp::gadd_service_handler g_add_service_handler_##controler##method (##controler, fn);
+    #define service_handler(method, fn) webmvcpp::gadd_service_handler g_add_service_handler_##method ("/"#method, fn);
 
     #define check_authorization_handler(fn) webmvcpp::gset_check_authorized_handler g_set_check_authorized_handle(fn);
 }

@@ -18,6 +18,7 @@ namespace webmvcpp
         virtual bool process_request(http_server_connection *connection, http_request & request, http_response & response) = 0;
         virtual session_manager *get_session_manager() = 0;
         virtual mime_file_types_prototype *get_mime_types() = 0;
+        virtual void log(const std::string &logMessage) = 0;
     };
 
     class http_server_prototype {

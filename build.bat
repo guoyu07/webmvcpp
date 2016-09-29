@@ -1,7 +1,7 @@
 del .\webmvcpp.exe
 echo|set /p= #define WEBMVCPP_MAJOR_VERSION 0 > ./src/buildinfo.h
 echo. >> ./src/buildinfo.h
-echo|set /p= #define WEBMVCPP_MINOR_VERSION 4 >> ./src/buildinfo.h
+echo|set /p= #define WEBMVCPP_MINOR_VERSION 5 >> ./src/buildinfo.h
 echo. >> ./src/buildinfo.h
 echo|set /p= #define WEBMVCPP_BUILD_NUMBER >> ./src/buildinfo.h
 git rev-list --count HEAD >> ./src/buildinfo.h

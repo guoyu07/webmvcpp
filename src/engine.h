@@ -3,7 +3,7 @@
 
 
 namespace webmvcpp
-{   
+{
     class webapplication;
     class session_manager;
 
@@ -42,6 +42,11 @@ namespace webmvcpp
         const time_t get_start_timestamp() { return startTimestamp; }
 
         static const char *get_service_name() { return "webmvcpp_service"; }
+
+        virtual void log(const std::string &logMessage)
+        {
+            std::cout << logMessage << std::endl;
+        }
 
 #if defined (_WIN32)
 
@@ -100,6 +105,32 @@ namespace webmvcpp
             ::remove("/usr/local/bin/webmvcpp");
 #endif
             std::cout << "Success" << std::endl;
+        }
+
+        void test_configuration(const std::string & configPath)
+        {
+            std::ifstream configFile(configPath);
+            if (!configFile.is_open())
+            {
+                std::cout << "could not open " << configPath << std::endl;
+                return;
+            }
+
+            configFile.seekg(0, configFile.end);
+            std::streamoff length = configFile.tellg();
+            configFile.seekg(0, configFile.beg);
+
+            std::string configString;
+            configString.resize((unsigned int)length);
+            configFile.read(&configString[0], length);
+
+            try {
+                const auto configRoot = json::parse(configString.c_str());
+                std::cout << "success" << std::endl;
+            }
+            catch(...){
+                std::cout << "failed" << std::endl;
+            }
         }
 
         void create_application(const std::string & appName)
@@ -255,8 +286,8 @@ namespace webmvcpp
         }
 
         void stop()
-        {
-        
+       {
+
         }
 
         void application_unload(webapplication *mvcApp) {
@@ -353,7 +384,7 @@ namespace webmvcpp
             while (dirent *entry = readdir(controllersDir))
             {
                 if (entry->d_type == DT_REG) {
-                    
+
                     std::vector<std::string> splittedFile = utils::split_string(entry->d_name, '.');
                     if (splittedFile.size() < 2)
                         continue;
@@ -366,10 +397,22 @@ namespace webmvcpp
 
             std::list<std::string> objFiles;
 
+#ifndef _WIN32
+            int fileNumber = 0;
+            char templateDirectoryFmt[] = "/tmp/webmvcppXXXXXX";
+            std::string tmpDirectoryPath = ::mkdtemp(templateDirectoryFmt);
+            ::mkdir(tmpDirectoryPath.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+#endif
             for (std::list<std::string>::iterator sourceIt = sourcefiles.begin(); sourceIt != sourcefiles.end(); ++sourceIt) {
-                
+
                 std::string result;
+#ifdef _WIN32
                 std::string tmpObjName = tmpnam(NULL);
+#else
+                std::ostringstream tmpObjNameStrm;
+                tmpObjNameStrm << tmpDirectoryPath << "/" << ++fileNumber;
+                std::string tmpObjName = tmpObjNameStrm.str();
+#endif
                 if (!webAppbuilder.compile(*sourceIt, tmpObjName, result)) {
                     buildResult = false;
                     break;
@@ -377,12 +420,6 @@ namespace webmvcpp
 
                 objFiles.push_back(tmpObjName);
             }
-
-#if defined (_WIN32)
-            
-#else
-            
-#endif
 
             if (buildResult) {
                 std::string linkAppResult;
@@ -395,16 +432,6 @@ namespace webmvcpp
                 webAppFile += ".so";
                 buildResult = webAppbuilder.linkApplication(objFiles, webAppFile, linkAppResult);
 #endif
-
-                for (std::list<std::string>::const_iterator objIt = objFiles.begin(); objIt != objFiles.end(); ++objIt)
-                {
-#if defined (_WIN32)
-                    ::DeleteFileA(objIt->c_str());
-#else
-                    remove(objIt->c_str());
-#endif
-                }
-
                 if (buildResult)
                     resultPath = webAppFile;
             }
@@ -417,6 +444,10 @@ namespace webmvcpp
                 remove(objIt->c_str());
 #endif
             }
+#ifndef _WIN32
+            ::rmdir(tmpDirectoryPath.c_str());
+#endif
+
 
             return buildResult;
         }
@@ -441,13 +472,13 @@ namespace webmvcpp
             pid_t process_id = fork();
             if (process_id < 0)
             {
-                printf("fork failed!\n");
+                this->log("fork failed!\n");
                 exit(1);
             }
 
             if (process_id > 0)
             {
-                printf("process_id of child process %d \n", process_id);
+                this->log("bad process_id value");
                 // return success in exit status
                 exit(0);
             }

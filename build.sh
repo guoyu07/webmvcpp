@@ -3,7 +3,7 @@
 rm ./webmvcpp
 buildNumber=$(git rev-list --count HEAD)
 echo "#define WEBMVCPP_MAJOR_VERSION 0" > ./src/buildinfo.h
-echo "#define WEBMVCPP_MINOR_VERSION 4" >> ./src/buildinfo.h
+echo "#define WEBMVCPP_MINOR_VERSION 5" >> ./src/buildinfo.h
 echo "#define WEBMVCPP_BUILD_NUMBER $buildNumber" >> ./src/buildinfo.h
 
 if test -x "$(type -p clang)"; then 
