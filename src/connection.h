@@ -11,18 +11,12 @@ namespace webmvcpp
         http_connection(int socket):
         socketDescriptor(socket)
         {
-            recvDataFlags = 0;
-#ifdef _WIN32
-            sendDataFlags = 0;
-#else
-            sendDataFlags = MSG_NOSIGNAL;
-#endif        
             recvBuffer.resize(16 * 1024);
         }
 
         void end_response()
         {
-            ::send(socketDescriptor, "0\r\n\r\n", 5, sendDataFlags);
+            ::send(socketDescriptor, "0\r\n\r\n", 5, MSG_NOSIGNAL);
         }
 
         void close()
@@ -48,7 +42,7 @@ namespace webmvcpp
 
             streamData.resize(64 * 1024);
 
-            ::recv(socketDescriptor, (char *)&streamData.front(), streamData.size(), recvDataFlags);
+            ::recv(socketDescriptor, (char *)&streamData.front(), streamData.size(), MSG_NOSIGNAL);
 
             return readyRead;
         }
@@ -91,7 +85,7 @@ namespace webmvcpp
                 os << "Connection: Close\r\n";
             os << "\r\n";
 
-            ::send(socketDescriptor, os.str().c_str(), os.str().length(), sendDataFlags);
+            ::send(socketDescriptor, os.str().c_str(), os.str().length(), MSG_NOSIGNAL);
         }
 
         void
@@ -120,9 +114,9 @@ namespace webmvcpp
                     hexStrm << std::hex << rSize << "\r\n";
                     std::string hexStr = hexStrm.str();
 
-                    ::send(socketDescriptor, hexStr.c_str(), hexStr.length(), sendDataFlags);
-                    ::send(socketDescriptor, (const char *)&fileBuffer.front(), (int)rSize, sendDataFlags);
-                    ::send(socketDescriptor, "\r\n", 2, sendDataFlags);
+                    ::send(socketDescriptor, hexStr.c_str(), hexStr.length(), MSG_NOSIGNAL);
+                    ::send(socketDescriptor, (const char *)&fileBuffer.front(), (int)rSize, MSG_NOSIGNAL);
+                    ::send(socketDescriptor, "\r\n", 2, MSG_NOSIGNAL);
 
                     rPos += rSize;
                 }
@@ -149,9 +143,9 @@ namespace webmvcpp
                 hexStrm << std::hex << rSize << "\r\n";
                 std::string hexStr = hexStrm.str();
 
-                ::send(socketDescriptor, hexStr.c_str(), hexStr.length(), sendDataFlags);
-                ::send(socketDescriptor, (const char *)&fileBuffer.front(), (int)rSize, sendDataFlags);
-                ::send(socketDescriptor, "\r\n", 2, sendDataFlags);
+                ::send(socketDescriptor, hexStr.c_str(), hexStr.length(), MSG_NOSIGNAL);
+                ::send(socketDescriptor, (const char *)&fileBuffer.front(), (int)rSize, MSG_NOSIGNAL);
+                ::send(socketDescriptor, "\r\n", 2, MSG_NOSIGNAL);
 
                 rPos += rSize;
             }
@@ -171,9 +165,9 @@ namespace webmvcpp
                 hexStrm << std::hex << cFragmentLength << "\r\n";
                 std::string hexStr = hexStrm.str();
 
-                ::send(socketDescriptor, hexStr.c_str(), hexStr.length(), sendDataFlags);
-                ::send(socketDescriptor, (const char *)&bytes.front() + cPtr, cFragmentLength, sendDataFlags);
-                ::send(socketDescriptor, "\r\n", 2, sendDataFlags);
+                ::send(socketDescriptor, hexStr.c_str(), hexStr.length(), MSG_NOSIGNAL);
+                ::send(socketDescriptor, (const char *)&bytes.front() + cPtr, cFragmentLength, MSG_NOSIGNAL);
+                ::send(socketDescriptor, "\r\n", 2, MSG_NOSIGNAL);
 
                 cPtr += cFragmentLength;
             }
@@ -193,9 +187,9 @@ namespace webmvcpp
                 hexStrm << std::hex << cFragmentLength << "\r\n";
                 std::string hexStr = hexStrm.str();
 
-                ::send(socketDescriptor, hexStr.c_str(), hexStr.length(), sendDataFlags);
-                ::send(socketDescriptor, (const char *)text.c_str() + cPtr, cFragmentLength, sendDataFlags);
-                ::send(socketDescriptor, "\r\n", 2, sendDataFlags);
+                ::send(socketDescriptor, hexStr.c_str(), hexStr.length(), MSG_NOSIGNAL);
+                ::send(socketDescriptor, (const char *)text.c_str() + cPtr, cFragmentLength, MSG_NOSIGNAL);
+                ::send(socketDescriptor, "\r\n", 2, MSG_NOSIGNAL);
 
                 cPtr += cFragmentLength;
             }
@@ -208,9 +202,6 @@ namespace webmvcpp
         std::vector<unsigned char> recvBuffer;
 
     core_prototype *mvcCore;
-
-    int sendDataFlags;
-    int recvDataFlags;
     };
 }
 

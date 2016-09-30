@@ -38,7 +38,7 @@ namespace webmvcpp
                 {
                     request.isKeepAlive = false;
                     const char *fatalErrorMessage = "HTTP/1.1 200 OK\r\nConnection: close\r\n\r\n<h3>Internal server error</h3><p>WebMVCpp - Your C++ MVC Web Engine</p>";
-                    ::send(socketDescriptor, fatalErrorMessage, strlen(fatalErrorMessage), sendDataFlags);
+                    ::send(socketDescriptor, fatalErrorMessage, strlen(fatalErrorMessage), MSG_NOSIGNAL);
                     break;
                 }
             } while (request.isKeepAlive);
@@ -53,7 +53,7 @@ namespace webmvcpp
                 if (!readyRead)
                     return false;
 
-                int rcvBytes = ::recv(socketDescriptor, (char *)&recvBuffer.front(), recvBuffer.size(), recvDataFlags);
+                int rcvBytes = ::recv(socketDescriptor, (char *)&recvBuffer.front(), recvBuffer.size(), MSG_NOSIGNAL);
                 if (rcvBytes == 0 || rcvBytes == -1)
                     return false;
 
@@ -72,7 +72,7 @@ namespace webmvcpp
                 if (!readyRead)
                     return false;
 
-                int rcvBytes = ::recv(socketDescriptor, (char *)&recvBuffer.front(), recvBuffer.size(), recvDataFlags);
+                int rcvBytes = ::recv(socketDescriptor, (char *)&recvBuffer.front(), recvBuffer.size(), MSG_NOSIGNAL);
                 if (rcvBytes == 0 || rcvBytes == -1)
                     return false;
 

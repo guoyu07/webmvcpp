@@ -172,7 +172,7 @@ namespace webmvcpp
             case 15:
                 osNameValue += "El Capitan";
                 break;
-            case 15:
+            case 16:
                 osNameValue += "Sierra";
                 break;
             default:

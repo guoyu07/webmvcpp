@@ -66,4 +66,8 @@
 #define min(a,b) (((a) < (b)) ? (a) : (b))
 #endif
 
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32) || defined(__MACH__)
+#define MSG_NOSIGNAL 0
+#endif
+
 #define PUGIXML_HEADER_ONLY
