@@ -73,7 +73,7 @@ namespace webmvcpp
             os << "HTTP/1.1 " << response.status << "\r\n";
             os << "Content-type: " << response.contentType << "\r\n";
 
-            for (std::map<std::string, std::string>::const_iterator it = response.header.cbegin(); it != response.header.cend(); ++it)
+            for (std::multimap<std::string, std::string>::const_iterator it = response.header.cbegin(); it != response.header.cend(); ++it)
                 os << it->first << ": " << it->second << "\r\n";
 
             os << "Transfer-Encoding: chunked\r\n";

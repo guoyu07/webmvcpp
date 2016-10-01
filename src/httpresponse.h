@@ -23,10 +23,20 @@ namespace webmvcpp
             content.clear();
         }
 
+        void add_cookie(const std::pair<std::string, std::string> & keyValue) 
+        {
+            header.insert(keyValue);
+        }
+
+        void add_cookie(const std::string & key, const std::string & value)
+        {
+            add_cookie(std::pair<std::string, std::string>(key, value));
+        }
+
         std::string status;
         std::string contentType;
 
-        http_values header;
+        std::multimap<std::string, std::string> header;
 
         bool isCompressed;
         bool isKeepAlive;
