@@ -305,7 +305,7 @@ namespace webmvcpp
             generate_webapp("./webapp/webapp.cpp");
             generate_application_header("./webapp/" + applicationName + ".h");
             generate_control("./webapp/views/title.ctrl", "title");
-            generate_masterpage("./webapp/views/template.html");
+            generate_masterpage("./webapp/views/main.html");
             generate_view("./webapp/views/main/index.html", "index");
             generate_controller("./webapp/controlles/main.cpp", "index");
             generate_model("./webapp/models/main");
@@ -402,17 +402,17 @@ namespace webmvcpp
 
             std::string viewsPath = webApplicationPath + "/views";
 
-            std::string masterpageContent;
-            std::ifstream masterPageFile(viewsPath + "/master.html");
-            if (!masterPageFile.is_open())
+            std::string mainContent;
+            std::ifstream mainPageFile(viewsPath + "/main.html");
+            if (!mainPageFile.is_open())
                 return false;
 
-            masterPageFile.seekg(0, std::ios::end);
-            std::streampos fileSize = masterPageFile.tellg();
-            masterPageFile.seekg(0, std::ios::beg);
+            mainPageFile.seekg(0, std::ios::end);
+            std::streampos fileSize = mainPageFile.tellg();
+            mainPageFile.seekg(0, std::ios::beg);
 
-            masterpageContent.resize((unsigned int)fileSize);
-            masterPageFile.read(&masterpageContent[0], fileSize);
+            mainContent.resize((unsigned int)fileSize);
+            mainPageFile.read(&mainContent[0], fileSize);
 
             DIR *cntrlsDir = opendir(viewsPath.c_str());
             if (!cntrlsDir)
@@ -479,6 +479,19 @@ namespace webmvcpp
                 std::string controller = entry->d_name;
                 std::string ctrlPath = viewsPath + "/" + controller;
 
+                std::string controllerContent = mainContent;
+
+                std::ifstream cntrlrContentPageFile(viewsPath + "/main.html");
+                if (cntrlrContentPageFile.is_open())
+                {
+                    cntrlrContentPageFile.seekg(0, std::ios::end);
+                    std::streampos fileSize = cntrlrContentPageFile.tellg();
+                    cntrlrContentPageFile.seekg(0, std::ios::beg);
+
+                    controllerContent.resize((unsigned int)fileSize);
+                    cntrlrContentPageFile.read(&controllerContent[0], fileSize);
+                }
+
                 DIR *cntrlDir = opendir(ctrlPath.c_str());
                 if (!cntrlDir)
                     continue;
@@ -528,7 +541,7 @@ namespace webmvcpp
                             blockPos = endBlockBlockPos + std::string(WEBMVC_CLOSEBLOCK_END).length();
                         }
 
-                        std::string currentPageContent = utils::multiply_replace_string(masterpageContent, WEBMVC_VIEWDATA, std::string(WEBMVC_CLOSEBLOCK_END), pageBlocks);
+                        std::string currentPageContent = utils::multiply_replace_string(controllerContent, WEBMVC_VIEWDATA, std::string(WEBMVC_CLOSEBLOCK_END), pageBlocks);
                         
                         std::string pageContent;
                         {
