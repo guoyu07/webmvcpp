@@ -38,7 +38,7 @@ extern "C" {
 #include "src/serverconnection.h"
 #include "src/requestmanager.h"
 
-
+#include "src/authentication.h"
 #include "src/applicationloader.h"
 #include "src/server.h"
 #include "src/builder.h"
