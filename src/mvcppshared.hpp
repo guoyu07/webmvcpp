@@ -10,7 +10,7 @@ namespace webmvcpp
 
     class mime_file_types_prototype {
         public:
-                virtual const std::string get_mime_type(const std::string & filePath) = 0;
+            virtual const std::string get_mime_type(const std::string & filePath) = 0;
         };
 
     class core_prototype {

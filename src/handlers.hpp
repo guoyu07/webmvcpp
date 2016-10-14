@@ -15,10 +15,10 @@ namespace webmvcpp
 
     typedef bool (*webmvcpp_service_handler)(const http_request & request, http_response & response);
 
-    typedef bool(*webmvcpp_controller_requests_handler)(http_connection *connection, http_request & request, http_response & response, variant_map & session);
-    typedef bool (*webmvcpp_request_handler)(http_connection *connection, http_request & request, http_response & response, variant_map & session, mvc_view_data & viewData);
+    typedef bool(*webmvcpp_controller_requests_handler)(const http_request & request, http_response & response, variant_map & session);
+    typedef bool (*webmvcpp_request_handler)(const http_request & request, http_response & response, variant_map & session, mvc_view_data & viewData);
 
-    typedef std::string (*webmvcpp_view_handler)(http_connection *connection, http_request & request, http_response & response, variant_map & session, mvc_view_data & viewData);
+    typedef std::string (*webmvcpp_view_handler)(const http_request & request, variant_map & session, mvc_view_data & viewData);
 
     #define set_start_application_handler(fn) webmvcpp::gset_start_application_handler g_set_start_application_handler(fn);
 

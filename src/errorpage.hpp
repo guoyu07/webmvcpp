@@ -5,7 +5,7 @@ namespace webmvcpp
 {
     struct error_page
     {
-        static void generate(http_response & response, const unsigned int httpCode, const std::string & caption, const std::string & description)
+        static void send(http_response & response, const unsigned int httpCode, const std::string & caption, const std::string & description)
         {
             std::ostringstream pageContent;
 
@@ -56,10 +56,9 @@ namespace webmvcpp
             response.status = httpStatus.str();
 
             response.contentType = "text/html";
-
-            unsigned int conntentLength = pageContent.str().length();
-            response.content.resize(conntentLength);
-            memcpy(&response.content.front(), pageContent.str().c_str(), conntentLength);
+            response.send_header();
+            response.send_content(pageContent.str());
+            response.end();
         }
     };
 }

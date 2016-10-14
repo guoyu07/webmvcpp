@@ -220,14 +220,14 @@ namespace webmvcpp
             return hostName;
         }
 
-        unsigned int getMemorySize()
+        unsigned long getMemorySize()
         {
 #if defined (_WIN32)
 
             MEMORYSTATUSEX status;
             status.dwLength = sizeof(status);
             GlobalMemoryStatusEx(&status);
-            return (unsigned int)(status.ullTotalPhys / (1024 * 1024));
+            return (unsigned long)(status.ullTotalPhys / (1024 * 1024));
 
 #elif (__linux)
 
@@ -244,7 +244,7 @@ namespace webmvcpp
             if (sysctl(mib, namelen, &memsize, &len, NULL, 0) < 0)
                 return 0;
             else
-                return memsize / (1024 * 1024);
+                return (unsigned long)memsize / (1024 * 1024);
 
 #endif
             return 0;

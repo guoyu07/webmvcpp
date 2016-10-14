@@ -1,4 +1,4 @@
-#include "src/declarations.h"
+#include "src/declarations.hpp"
 
 #include "3rdparty/intrusive_ptr.hpp"
 
@@ -12,37 +12,40 @@ extern "C" {
 #include "3rdparty/json.hpp"
 #include "3rdparty/pugixml/pugixml.hpp"
 #include "3rdparty/pugixml/pugixml.cpp"
-#include "3rdparty/md5.h"
+#include "3rdparty/md5.hpp"
 
-#include "src/buildinfo.h"
+#include "src/buildinfo.hpp"
 
-#include "src/utils.h"
-#include "src/systemutils.h"
+#include "src/utils.hpp"
+#include "src/systemutils.hpp"
 
-#include "src/httprequest.h"
-#include "src/httpresponse.h"
+#include "src/httprequest.hpp"
+#include "src/httpresponse.hpp"
 
-#include "src/mvcppshared.h"
+#include "src/multipartparser.hpp"
+#include "src/requestparser.hpp"
 
-#include "src/connection.h"
+#include "src/mvcppshared.hpp"
 
-#include "src/variant.h"
-#include "src/errorpage.h"
-#include "src/multipartparser.h"
-#include "src/handlers.h"
-#include "src/requestmodel.h"
-#include "src/webapplication.h"
-#include "src/requestparser.h"
-#include "src/sessionmanager.h"
-#include "src/mimefiletypes.h"
-#include "src/serverconnection.h"
-#include "src/requestmanager.h"
+#include "src/variant.hpp"
+#include "src/errorpage.hpp"
+#include "src/handlers.hpp"
+#include "src/requestmodel.hpp"
+#include "src/webapplication.hpp"
+#include "src/sessionmanager.hpp"
+#include "src/mimefiletypes.hpp"
+#include "src/incomingconnection.hpp"
+#include "src/requestmanager.hpp"
 
-#include "src/authentication.h"
-#include "src/applicationloader.h"
-#include "src/server.h"
-#include "src/builder.h"
-#include "src/engine.h"
+
+#include "src/applicationloader.hpp"
+#include "src/server.hpp"
+#include "src/builder.hpp"
+#include "src/engine.hpp"
+
+#ifndef WEBMVCPP_AMALGAMATION
+const char webmvcpp_headers_hpp_amalgamation[] = {0};
+#endif
 
 
 int main(int argc, char *args[])

@@ -2,7 +2,6 @@
 #define WEBMVCPP_BUILDER_H
 
 extern "C" const char webmvcpp_headers_hpp_amalgamation[];
-//const char webmvcpp_headers_hpp_amalgamation[] = {0};
 
 namespace webmvcpp
 {
@@ -15,11 +14,11 @@ namespace webmvcpp
     {
         builder();
     public:
-        builder(const std::string & appName):
-        applicationName(appName)
+        builder(const std::string & appName) :
+            applicationName(appName)
         {
             std::vector<std::string> splittedDomain = utils::split_string(appName, '.');
-            for(std::vector<std::string>::iterator it = splittedDomain.begin();it != splittedDomain.end();++it)
+            for (std::vector<std::string>::iterator it = splittedDomain.begin(); it != splittedDomain.end(); ++it)
             {
                 if (it->length() == 0)
                     continue;
@@ -34,10 +33,10 @@ namespace webmvcpp
             }
         }
 
-        builder(const std::string & appName, const std::string & webAppPath):
-        applicationName(appName),
-        webApplicationPath(webAppPath),
-        headersHppAmalgamation(webAppPath + "/webmvcpp.hpp")
+        builder(const std::string & appName, const std::string & webAppPath) :
+            applicationName(appName),
+            webApplicationPath(webAppPath),
+            headersHppAmalgamation(webAppPath + "/webmvcpp.hpp")
         {
             std::ofstream outputHeadersHppFile(headersHppAmalgamation, std::ofstream::out);
             outputHeadersHppFile << webmvcpp_headers_hpp_amalgamation;
@@ -194,11 +193,11 @@ namespace webmvcpp
             ofs << std::endl;
             ofs << "namespace webmvcpp" << std::endl;
             ofs << "{" << std::endl;
-            ofs << "    controller_requests_handler(" << controllerName << ", [](http_connection *connection, http_request & request, http_response & response, variant_map & session) -> bool {" << std::endl;
+            ofs << "    controller_requests_handler(" << controllerName << ", [](const http_request & request, http_response & response, variant_map & session) -> bool {" << std::endl;
             ofs << "        return true;" << std::endl;
             ofs << "    });" << std::endl;
             ofs << std::endl;
-            ofs << "    request_handler(" << controllerName << ", index, [](http_connection *connection, http_request & request, http_response & response, variant_map & session, mvc_view_data & viewData) -> bool {" << std::endl;
+            ofs << "    request_handler(" << controllerName << ", index, [](const http_request & request, http_response & response, variant_map & session, mvc_view_data & viewData) -> bool {" << std::endl;
             ofs << "        return true;" << std::endl;
             ofs << "    });" << std::endl;
             ofs << "}" << std::endl;
@@ -252,7 +251,7 @@ namespace webmvcpp
             ofs << "    set_create_session_handler([](const http_request & request, variant_map & session) -> bool {" << std::endl;
             ofs << "        return true;" << std::endl;
             ofs << "    });" << std::endl;
-            ofs <<  std::endl;
+            ofs << std::endl;
             ofs << "    set_remove_session_handler([](variant_map & session) -> void {" << std::endl;
             ofs << std::endl;
             ofs << "    });" << std::endl;
@@ -422,13 +421,13 @@ namespace webmvcpp
 
             while (dirent *entry = readdir(cntrlsDir))
             {
-                if(entry->d_type == DT_DIR)
+                if (entry->d_type == DT_DIR)
                     continue;
                 std::string fileName = entry->d_name;
                 std::vector<std::string> splittedName = utils::split_string(fileName, '.');
-                if ((splittedName.size() < 2) || (splittedName[splittedName.size() - 1] !="ctrl"))
+                if ((splittedName.size() < 2) || (splittedName[splittedName.size() - 1] != "ctrl"))
                     continue;
-                std::string filePath = viewsPath+ "/" + fileName;
+                std::string filePath = viewsPath + "/" + fileName;
                 std::ifstream ctrlFile(filePath);
                 if (!ctrlFile.is_open())
                     continue;
@@ -445,15 +444,15 @@ namespace webmvcpp
                 size_t controlEndBlockPos = controlTextFileContent.rfind(WEBMVC_VIEWCONTROL_CLOSED, controlTextFileContent.length() - 1);
                 if (controlBlockPos == std::string::npos || controlEndBlockPos == std::string::npos)
                     continue;
-                size_t controlParametersPos = controlBlockPos  + std::string(WEBMVC_VIEWCONTROL).length();
+                size_t controlParametersPos = controlBlockPos + std::string(WEBMVC_VIEWCONTROL).length();
                 size_t controlParametersEndPos = controlTextFileContent.find(WEBMVC_BLOCK_END, controlParametersPos);
                 if (controlParametersEndPos == std::string::npos)
                     continue;
-                
+
                 std::string parameters = controlTextFileContent.substr(controlParametersPos, controlParametersEndPos - controlParametersPos);
                 if (parameters.length() == 0)
                     continue;
-                
+
                 size_t controlContentPos = controlParametersEndPos + 1; // sizeof WEBMVC_BLOCK_END
 
                 view_control control;
@@ -542,7 +541,7 @@ namespace webmvcpp
                         }
 
                         std::string currentPageContent = utils::multiply_replace_string(controllerContent, WEBMVC_VIEWDATA, std::string(WEBMVC_CLOSEBLOCK_END), pageBlocks);
-                        
+
                         std::string pageContent;
                         {
                             size_t prevPos = 0;
@@ -570,7 +569,7 @@ namespace webmvcpp
                                 {
                                     pageContent += ctrlIt->second.content;
                                 }
-                                else 
+                                else
                                 {
                                     std::ostringstream ctrlCode;
                                     ctrlCode << "{%{" << std::endl;
@@ -583,7 +582,7 @@ namespace webmvcpp
                                     ctrlCode << "{%" << std::endl;
                                     ctrlCode << "}%}" << std::endl;
                                     pageContent += ctrlCode.str();
-                                }                        
+                                }
 
                                 curPos = blockEnd + std::string(WEBMVC_CLOSEBLOCK_END).length();
                                 prevPos = curPos;
@@ -596,14 +595,14 @@ namespace webmvcpp
 
 
 
-                        viewsContent << std::endl << "view_handler(" + controller + ", " + page + ", [](http_connection *connection, http_request & request, http_response & response, variant_map & session, mvc_view_data & viewData) -> std::string {" << std::endl;
+                        viewsContent << std::endl << "view_handler(" + controller + ", " + page + ", [](const http_request & request, variant_map & session, mvc_view_data & viewData) -> std::string {" << std::endl;
 
                         viewsContent << "    std::ostringstream pageContent;" << std::endl;
 
                         pageContent = utils::multiply_replace_string(pageContent, "{$", "}", "{%= viewData[\"", "\"] %}");
 
                         size_t htmlBlockBegin = 0;
-                        
+
                         for (size_t codeBlockPos = pageContent.find("{%", 0); codeBlockPos != std::string::npos; codeBlockPos = pageContent.find("{%", codeBlockPos))
                         {
                             codeBlockPos += 2; // "{%"
@@ -622,15 +621,15 @@ namespace webmvcpp
                             codeBlockPos = endCodeBlockPos;
                             htmlBlockBegin = endCodeBlockPos; //"%}"
 
-                            if (codeBlock.length() > 0 && codeBlock[0]=='=')
+                            if (codeBlock.length() > 0 && codeBlock[0] == '=')
                                 viewsContent << "pageContent << " + codeBlock.substr(1) + ";" << std::endl;
                             else
                                 viewsContent << std::endl << codeBlock << ";" << std::endl;
                         }
-                        
+
                         if (htmlBlockBegin != pageContent.length())
                             viewsContent << "pageContent << " + utils::to_cHexString(pageContent.substr(htmlBlockBegin)) + "; " << std::endl;
-                        
+
                         viewsContent << "    return pageContent.str();" << std::endl;
                         viewsContent << "});" << std::endl;
                     }
@@ -753,7 +752,7 @@ namespace webmvcpp
 
     private:
         std::string applicationName;
-                std::string applicationClassName;
+        std::string applicationClassName;
         std::string webApplicationPath;
         std::string headersHppAmalgamation;
         std::string sourcesCppAmalgamation;
@@ -773,7 +772,7 @@ namespace webmvcpp
         const char *compiler_cpp_flags = "-O3 -std=c++11 -fPIC -Wall -Ofast -fno-rtti  -c";
         const char *linker_flags = "-ldl -pthread -shared";
 #endif
-        
+
 
     };
 }

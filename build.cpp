@@ -61,7 +61,7 @@ bool appendFileToContent(const char *sourceFilePath, std::ostream & content)
 int main()
 {
     std::vector<std::string> headers_hpp;
-    headers_hpp.push_back("src/declarations.h");
+    headers_hpp.push_back("src/declarations.hpp");
 #ifdef _WIN32
     headers_hpp.push_back("3rdparty/dirent_win32.h");
 #endif
@@ -69,20 +69,21 @@ int main()
     headers_hpp.push_back("3rdparty/json.hpp");
     headers_hpp.push_back("3rdparty/pugixml/pugixml.hpp");
     headers_hpp.push_back("3rdparty/pugixml/pugixml.cpp");
-    headers_hpp.push_back("3rdparty/md5.h");
-    headers_hpp.push_back("src/buildinfo.h");
-    headers_hpp.push_back("src/utils.h");
-    headers_hpp.push_back("src/systemutils.h");
-    headers_hpp.push_back("src/httprequest.h");
-    headers_hpp.push_back("src/httpresponse.h");
-    headers_hpp.push_back("src/mvcppshared.h");
-    headers_hpp.push_back("src/connection.h");
-    headers_hpp.push_back("src/variant.h");
-    headers_hpp.push_back("src/errorpage.h");
-    headers_hpp.push_back("src/handlers.h");
-    headers_hpp.push_back("src/requestmodel.h");
-    headers_hpp.push_back("src/webapplication.h");
-    headers_hpp.push_back("src/sessionmanager.h");
+    headers_hpp.push_back("3rdparty/md5.hpp");
+    headers_hpp.push_back("src/buildinfo.hpp");
+    headers_hpp.push_back("src/utils.hpp");
+    headers_hpp.push_back("src/systemutils.hpp");
+    headers_hpp.push_back("src/httprequest.hpp");
+    headers_hpp.push_back("src/httpresponse.hpp");
+    headers_hpp.push_back("src/mvcppshared.hpp");
+    headers_hpp.push_back("src/connection.hpp");
+    headers_hpp.push_back("src/authentication.hpp");
+    headers_hpp.push_back("src/variant.hpp");
+    headers_hpp.push_back("src/errorpage.hpp");
+    headers_hpp.push_back("src/handlers.hpp");
+    headers_hpp.push_back("src/requestmodel.hpp");
+    headers_hpp.push_back("src/webapplication.hpp");
+    headers_hpp.push_back("src/sessionmanager.hpp");
 
     std::ofstream outputHeadersHppFile ("webmvcpp_headers_hpp_amalgamation.c", std::ofstream::out);
     outputHeadersHppFile << "const char webmvcpp_headers_hpp_amalgamation[]={\\" << std::endl;

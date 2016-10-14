@@ -16,12 +16,17 @@ namespace webmvcpp
             headers.clear();
         }
     };
-
     typedef std::map<std::string, multypart_entry> http_multypart_values;
 
     struct http_request
     {
-        http_request()
+    private:
+        http_request();
+        http_request(const http_request &);
+        http_request & operator=(const http_request &);
+    public:
+        http_request(int s):
+        socketDescriptor(s)
         {
             clear();
         }
@@ -55,7 +60,39 @@ namespace webmvcpp
 
             content.clear();
         }
-
+        
+        bool
+        read_stream(std::vector<unsigned char> & streamData)
+        {
+            bool readyRead = this->wait_for_data();
+            if (!readyRead)
+                return readyRead;
+            
+            streamData.resize(64 * 1024);
+            
+            ::recv(socketDescriptor, (char *)&streamData.front(), streamData.size(), WEBMVCPP_RECVDATA_FLAGS);
+            
+            return readyRead;
+        }
+        
+        bool
+        wait_for_data()
+        {
+            fd_set readfds;
+            FD_ZERO(&readfds);
+            FD_SET(socketDescriptor, &readfds);
+            
+            timeval t = { 30, 0 };
+            int ret = select(socketDescriptor + 1, &readfds, NULL, NULL, &t);
+            if (ret == 0 || ret == -1)
+                return false;
+            
+            if (FD_ISSET(socketDescriptor, &readfds))
+                return true;
+            
+            return false;
+        }
+               
         bool rangesExist;
         bool supportGZip;
         bool isKeepAlive;
@@ -84,6 +121,8 @@ namespace webmvcpp
         http_values header;
 
         std::vector<unsigned char> content;
+        
+        int socketDescriptor;
     };
 }
 #endif // WEBMVCPP_HTTPREQUEST_H

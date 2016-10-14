@@ -28,15 +28,11 @@ namespace webmvcpp
             if (serviceIt!=mvcapp->handlers->services.end())
             {
                 if (serviceIt->second(request, response)){
-                    connection->send_response_header(response);
-                    connection->send_response_content(response.content); 
+                    return;
                 }
                 else {
-                    error_page::generate(response, 406, "Not Acceptable", "Not acceptable request");
-                    connection->send_response_header(response);
-                    connection->send_response_content(response.content);
+                    error_page::send(response, 406, "Not Acceptable", "Not acceptable request");
                 }
-                connection->end_response();
                 return;
             }
 
@@ -50,22 +46,19 @@ namespace webmvcpp
                 send_mvc_page(mvcapp, controllerName, connection, request, response);
             }
             else
-                send_static_file(mvcapp, connection, request, response);
+                send_static_file(mvcapp, request, response);
 
-            connection->end_response();
+            response.end();
         }
 
         void
-        send_static_file(webapplication *webapp, http_connection *connection, http_request & request, http_response & response)
+        send_static_file(webapplication *webapp, http_request & request, http_response & response)
         {
             std::string filePath = webapp->staticPath + request.path;
 
             if (filePath.find("..") != std::string::npos)
             {
-                error_page::generate(response, 403, "Bad request", "Access to this host is forbidden by default");
-
-                connection->send_response_header(response);
-                connection->send_response_content(response.content);
+                error_page::send(response, 403, "Bad request", "Access to this host is forbidden by default");
                 return;
             }
 
@@ -74,10 +67,7 @@ namespace webmvcpp
             std::ifstream fs(filePath, std::ios::in | std::ios::binary);
             if (stat(filePath.c_str(), &info) != 0 || info.st_mode & S_IFDIR || !fs.is_open())
             {
-                error_page::generate(response, 404, "Not found", "Page not found");
-                connection->send_response_header(response);
-                connection->send_response_content(response.content);
-
+                error_page::send(response, 404, "Not found", "Page not found");
                 return;
             }
 
@@ -123,12 +113,7 @@ namespace webmvcpp
 
                 if (request.ranges.size() == 0)
                 {
-                    response.status = "416 Requested range not satisfiable";
-                    response.contentType = "text/html";
-
-                    connection->send_response_header(response);
-                    connection->send_response_content("<h2>Range is wrong</h2>");
-
+                    error_page::send(response, 416, "Requested range not satisfiable", "<h2>Range is wrong</h2>");
                     return;
                 }
 
@@ -143,16 +128,16 @@ namespace webmvcpp
             expiredDate += 1 * 60 * 60 * 24 * 145;
             response.header.insert(std::pair<std::string, std::string>("Expires", utils::to_rfc2822_datetime(expiredDate)));
 
-            connection->send_response_header(response);
+            response.send_header();
 
             if (request.rangesExist)
-                connection->send_response_content(fs, request.ranges);
+                response.send_content(fs, request.ranges);
             else
-                connection->send_response_content(fs);
+                response.send_content(fs);
         }
 
         bool
-        is_model_valid(webapplication *mvcapp, http_connection *connection, http_request & request, session sessionContext, const std::map<std::string, request_model> & m)
+        is_model_valid(webapplication *mvcapp, http_request & request, session sessionContext, const std::map<std::string, request_model> & m)
         {
             std::map<std::string, request_model>::const_iterator it = m.find(request.method);
             if (it == m.end())
@@ -251,7 +236,7 @@ namespace webmvcpp
             if (reqModelIt == reqModels.cend())
             {
                 if (request.method == "POST")
-                    connection->wait_for_content();
+                    connection->wait_for_content(request);
             }
             else
             {
@@ -264,19 +249,14 @@ namespace webmvcpp
                     {
                         const std::set<std::string> & flags = postReqModel->second.flags;
                         if (flags.find(MVCPP_MODEL_FLAGS_STREAM) == flags.cend())
-                            connection->wait_for_content();
+                            connection->wait_for_content(request);
                     }
 
                 }
 
-                if (!is_model_valid(mvcapp, connection, request, sessionContext, reqModelIt->second))
+                if (!is_model_valid(mvcapp, request, sessionContext, reqModelIt->second))
                 {
-                    response.status = "400 Bad Request";
-                    utils::append_string(response.content, response.status);
-
-                    connection->send_response_header(response);
-                    connection->send_response_content(response.content);
-
+                    error_page::send(response, 400, "Bad Request", "Bad Request");
                     return;
                 }
 
@@ -288,11 +268,8 @@ namespace webmvcpp
             {
                 std::lock_guard<std::mutex> locker(sessionContext->get_lock());
 
-                if (!reqContrlrHandlerIt->second(connection, request, response, sessionContext->get_data()))
+                if (!reqContrlrHandlerIt->second(request, response, sessionContext->get_data()))
                 {
-                    connection->send_response_header(response);
-                    connection->send_response_content(response.content);
-
                     return;
                 }
             }
@@ -304,11 +281,8 @@ namespace webmvcpp
             {
                 std::lock_guard<std::mutex> locker(sessionContext->get_lock());
 
-                if (!reqHandlerIt->second(connection, request, response, sessionContext->get_data(), viewData))
+                if (!reqHandlerIt->second(request, response, sessionContext->get_data(), viewData))
                 {
-                    connection->send_response_header(response);
-                    connection->send_response_content(response.content);
-
                     return;
                 }
             }
@@ -319,7 +293,7 @@ namespace webmvcpp
             {
                 std::lock_guard<std::mutex> locker(sessionContext->get_lock());
 
-                mvcapp->handlers->masterPageHandler(connection, request, response, sessionContext->get_data(), viewData);
+                mvcapp->handlers->masterPageHandler(request, response, sessionContext->get_data(), viewData);
             }
             
             std::map<std::string, webmvcpp_view_handler> views = mvcapp->handlers->views;
@@ -327,14 +301,12 @@ namespace webmvcpp
             if (viewHandlerIt != views.end())
             {
                 std::lock_guard<std::mutex> locker(sessionContext->get_lock());
-                pageContent = viewHandlerIt->second(connection, request, response, sessionContext->get_data(), viewData);
-                connection->send_response_header(response);
-                connection->send_response_content(pageContent);
+                pageContent = viewHandlerIt->second(request, sessionContext->get_data(), viewData);
+                response.send_header();
+                response.send_content(pageContent);
             }
             else {
-                error_page::generate(response, 404, "Not found", "Page not found");
-                connection->send_response_header(response);
-                connection->send_response_content(response.content);
+                error_page::send(response, 404, "Not found", "Page not found");
             }
 
             return;

@@ -2,7 +2,7 @@
 #define WEBMVCPP_MULTIPARTPARSER_H
 
 namespace webmvcpp
-{
+{   
     class http_multipart_parser
     {
         http_multipart_parser();
@@ -31,7 +31,7 @@ namespace webmvcpp
 
         size_t parse()
         {
-            unsigned int retSize = multipart_parser_execute(parserCtx, (const char *)&bodyContent.front(), bodyContent.size());
+            size_t retSize = multipart_parser_execute(parserCtx, (const char *)&bodyContent.front(), bodyContent.size());
 
             return retSize;
         }

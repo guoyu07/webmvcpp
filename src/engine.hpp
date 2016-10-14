@@ -302,12 +302,7 @@ namespace webmvcpp
             std::map<std::string, webapplication_module_ptr>::iterator it = webApps.find(request.host);
             if (it == webApps.end())
             {
-                error_page::generate(response, 403, "Forbidden", "Access to this host is forbidden by default");
-
-                connection->send_response_header(response);
-                connection->send_response_content(response.content);
-                connection->end_response();
-
+                error_page::send(response, 403, "Forbidden", "Access to this host is forbidden by default");
                 return false;
             }
 

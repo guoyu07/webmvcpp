@@ -8,8 +8,8 @@ INCLUDES = -I./3rdparty
 
 CC = clang
 CCC = clang++
-CFLAGS = -O3 -fPIC
-CCFLAGS = -O3 -std=c++11 -fPIC -Wall -Ofast -fno-rtti -march=native
+CFLAGS = -O3 -fPIC -DWEBMVCPP_AMALGAMATION
+CCFLAGS = -O3 -std=c++11 -fPIC -Wall -Ofast -fno-rtti -march=native -DWEBMVCPP_AMALGAMATION
 
 DESTDIR = /usr/local/bin
 

@@ -85,7 +85,7 @@ public:
 
     //////////////////////////////
 
-    void update(const unsigned char input[], size_type length)
+    void update(const unsigned char input[], unsigned long length)
     {
         // compute number of bytes mod 64
         size_type index = count[0] / 8 % blocksize;
@@ -123,7 +123,7 @@ public:
     //////////////////////////////
 
     // for convenience provide a verson with signed char
-    void update(const char input[], size_type length)
+    void update(const char input[], unsigned long length)
     {
         update((const unsigned char*)input, length);
     }

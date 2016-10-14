@@ -36,16 +36,16 @@ namespace webmvcpp
 
         static void append_string(std::vector<unsigned char> & buffer, const std::string & str)
         {
-            unsigned int wptr = buffer.size();
-            unsigned int strLength = str.length();
+            unsigned long wptr = buffer.size();
+            unsigned long strLength = str.length();
             buffer.resize(wptr + strLength);
 
             memcpy(&buffer.front() + wptr, str.c_str(), strLength);
         }
 
-        static void append_bytes(std::vector<unsigned char> & buffer, const unsigned char *bytes, unsigned int bytesSize)
+        static void append_bytes(std::vector<unsigned char> & buffer, const unsigned char *bytes, unsigned long bytesSize)
         {
-            unsigned int wptr = buffer.size();
+            unsigned long wptr = buffer.size();
             buffer.resize(wptr + bytesSize);
 
             memcpy(&buffer.front() + wptr, bytes, bytesSize);
@@ -87,7 +87,7 @@ namespace webmvcpp
                 prevPos = curPos;
             }
 
-            unsigned int contentLength = content.length();
+            size_t contentLength = content.length();
             if (prevPos != contentLength) {
                 result += content.substr(prevPos, contentLength - prevPos);
             }
@@ -117,7 +117,7 @@ namespace webmvcpp
                 prevPos = endBlockPos;
             }
 
-            unsigned int ctrlTempLength = content.length();
+            size_t ctrlTempLength = content.length();
             if (prevPos != ctrlTempLength) {
                 result += content.substr(prevPos, ctrlTempLength - prevPos);
             }
@@ -155,7 +155,7 @@ namespace webmvcpp
                     result += it->second;
             }
 
-            unsigned int ctrlTempLength = content.length();
+            unsigned long ctrlTempLength = content.length();
             if (prevPos != ctrlTempLength)
                 result += content.substr(prevPos, ctrlTempLength - prevPos);
 
@@ -266,7 +266,7 @@ namespace webmvcpp
                 "abcdefghijklmnopqrstuvwxyz"
                 "0123456789+/";
 
-            int inLen = encodedString.size();
+            unsigned long inLen = encodedString.size();
             int i = 0;
             int j = 0;
             int in_ = 0;

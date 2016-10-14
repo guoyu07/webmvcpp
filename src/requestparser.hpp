@@ -229,7 +229,7 @@ namespace webmvcpp
                 if (boundaryPos != std::string::npos)
                 {
                     boundaryPos += boundaryKey.length();
-                    int boundaryEnd = request.contentType.find(';', boundaryPos);
+                    size_t boundaryEnd = request.contentType.find(';', boundaryPos);
 
                     std::string boundaryValue = std::string("--") + request.contentType.substr(boundaryPos, boundaryEnd - boundaryPos);
 
@@ -259,7 +259,7 @@ namespace webmvcpp
             httpParserSettings.on_message_complete = http_request_parser::message_complete_cb;
         }
 
-        int accept_data(const unsigned char * buffer, unsigned int length)
+        size_t accept_data(const unsigned char * buffer, size_t length)
         {
             return http_parser_execute(&httpParser, &httpParserSettings, (const char *)buffer, length);
         }

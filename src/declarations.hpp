@@ -66,8 +66,11 @@
 #define min(a,b) (((a) < (b)) ? (a) : (b))
 #endif
 
+#define WEBMVCPP_RECVDATA_FLAGS 0
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32) || defined(__MACH__)
-#define MSG_NOSIGNAL 0
+#define WEBMVCPP_SENDDATA_FLAGS 0
+#else
+#define WEBMVCPP_SENDDATA_FLAGS MSG_NOSIGNAL
 #endif
 
 #define PUGIXML_HEADER_ONLY
