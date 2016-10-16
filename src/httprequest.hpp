@@ -25,6 +25,19 @@ namespace webmvcpp
         http_request(const http_request &);
         http_request & operator=(const http_request &);
     public:
+        http_request(const std::string & m, const std::string & h, const std::string & u, const http_values & q = http_values()) :
+        socketDescriptor(0),
+        method(m),
+        host(h),
+        url(u)
+        {
+            for (http_values::const_iterator it = q.begin(); it != q.end(); ++it)
+            {
+                queryString += it->first + "=" + it->second;
+                if (std::next(it) != q.end()) queryString += "&";
+            }
+        }
+
         http_request(int s):
         socketDescriptor(s)
         {

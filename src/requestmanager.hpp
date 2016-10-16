@@ -15,7 +15,7 @@ namespace webmvcpp
         }
 
         void
-        process_request(webapplication *mvcapp, http_server_connection *connection, http_request & request, http_response & response)
+        process_request(webapplication *mvcapp, http_incoming_connection *connection, http_request & request, http_response & response)
         {
             response.status = "200 OK";
 
@@ -200,7 +200,7 @@ namespace webmvcpp
         }
 
         void
-        send_mvc_page(webapplication *mvcapp, const std::string & controllerName, http_server_connection *connection, http_request & request, http_response & response)
+        send_mvc_page(webapplication *mvcapp, const std::string & controllerName, http_incoming_connection *connection, http_request & request, http_response & response)
         {
             response.contentType = "text/html";
 

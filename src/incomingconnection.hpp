@@ -3,11 +3,11 @@
 
 namespace webmvcpp
 {
-    class http_server_connection
+    class http_incoming_connection
     {
-        http_server_connection();
+        http_incoming_connection();
     public:
-        http_server_connection(core_prototype *c, http_server_prototype *s, unsigned long ipAddr, int socket):
+        http_incoming_connection(core_prototype *c, http_server_prototype *s, unsigned long ipAddr, int socket):
         socketDescriptor(socket),
         ipAddress(ipAddr),
         request(socket),
@@ -38,7 +38,7 @@ namespace webmvcpp
                 catch (...)
                 {
                     request.isKeepAlive = false;
-                    const char *fatalErrorMessage = "HTTP/1.1 200 OK\r\nConnection: close\r\n\r\n<h3>Internal server error</h3><p>WebMVCpp - Your C++ MVC Web Engine</p>";
+                    const char *fatalErrorMessage = "HTTP/1.1 500 OK\r\nConnection: close\r\n\r\n<h3>Internal server error</h3><p>WebMVCpp - Your C++ MVC Web Engine</p>";
                     ::send(socketDescriptor, fatalErrorMessage, strlen(fatalErrorMessage), WEBMVCPP_SENDDATA_FLAGS);
                     break;
                 }

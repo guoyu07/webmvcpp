@@ -24,6 +24,7 @@ extern "C" {
 
 #include "src/multipartparser.hpp"
 #include "src/requestparser.hpp"
+#include "src/responseparser.hpp"
 
 #include "src/mvcppshared.hpp"
 
@@ -35,11 +36,12 @@ extern "C" {
 #include "src/sessionmanager.hpp"
 #include "src/mimefiletypes.hpp"
 #include "src/incomingconnection.hpp"
+#include "src/httpclient.hpp"
 #include "src/requestmanager.hpp"
 
 
 #include "src/applicationloader.hpp"
-#include "src/server.hpp"
+#include "src/httpserver.hpp"
 #include "src/builder.hpp"
 #include "src/engine.hpp"
 

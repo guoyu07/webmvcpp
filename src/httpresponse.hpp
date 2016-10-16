@@ -162,8 +162,17 @@ namespace webmvcpp
             }
         }
 
+        int get_status_code()
+        {
+            int result = 0;
+            std::istringstream iStream(this->status);
+            iStream >> result;
+
+            return result;
+        }
 
         std::string status;
+        std::vector<unsigned char> content;
         std::string contentType;
 
         http_values header;

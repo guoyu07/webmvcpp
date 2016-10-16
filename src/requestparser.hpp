@@ -253,7 +253,7 @@ namespace webmvcpp
             httpParserSettings.on_header_field = http_request_parser::header_field_cb;
             httpParserSettings.on_header_value = http_request_parser::header_value_cb;
             httpParserSettings.on_url = http_request_parser::request_url_cb;
-            httpParserSettings.on_status = NULL;//HttpRequestParser::response_status_cb;
+            httpParserSettings.on_status = NULL;//http_request_parser::response_status_cb;
             httpParserSettings.on_body = http_request_parser::body_cb;
             httpParserSettings.on_headers_complete = http_request_parser::headers_complete_cb;
             httpParserSettings.on_message_complete = http_request_parser::message_complete_cb;

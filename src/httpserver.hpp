@@ -90,7 +90,7 @@ namespace webmvcpp
                     }
 
                     unsigned long ipAddr = cliAddr.sin_addr.s_addr;
-                    http_server_connection *connection = new http_server_connection(mvcCore, this, ipAddr, clientSocket);
+                    http_incoming_connection *connection = new http_incoming_connection(mvcCore, this, ipAddr, clientSocket);
                     retain_connection(ipAddr, connection);
                     if (!systemutils::create_thread(connection_thread_routine, connection))
                     {
@@ -111,10 +111,10 @@ namespace webmvcpp
 #endif
         connection_thread_routine(void *threadParam)
         {
-            http_server_connection *connection = static_cast<http_server_connection *>(threadParam);
+            http_incoming_connection *connection = static_cast<http_incoming_connection *>(threadParam);
             http_server_prototype *server = connection->http_server();
             unsigned long ipAddress = connection->get_ip_address();
-            std::unique_ptr<http_server_connection> threadCleaner(connection);
+            std::unique_ptr<http_incoming_connection> threadCleaner(connection);
 
             if (server->is_connection_permitted(ipAddress))
             {
@@ -145,7 +145,7 @@ namespace webmvcpp
         }
 
         void 
-        retain_connection(unsigned long ipAddress, http_server_connection *c)
+        retain_connection(unsigned long ipAddress, http_incoming_connection *c)
         {
             std::unique_lock<std::mutex> lm(connectionsCountLock);
 
@@ -155,7 +155,7 @@ namespace webmvcpp
         }
 
         void
-        release_connection(unsigned long ipAddress, http_server_connection *c)
+        release_connection(unsigned long ipAddress, http_incoming_connection *c)
         {
             std::unique_lock<std::mutex> lm(connectionsCountLock);
 
@@ -198,7 +198,7 @@ namespace webmvcpp
 
         std::condition_variable connection_conditions;
         std::mutex connectionsCountLock;
-        std::set<http_server_connection *> activeConnections;
+        std::set<http_incoming_connection *> activeConnections;
         std::map<unsigned long, unsigned long> ipConnections;
 
         int listenSocket;
