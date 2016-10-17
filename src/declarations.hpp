@@ -47,6 +47,7 @@
 #include <unistd.h>
 #include <pwd.h>
 #include <sys/auxv.h>
+#include <netdb.h>
 #endif 
 
 #ifdef __APPLE__

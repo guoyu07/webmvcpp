@@ -10,8 +10,8 @@ namespace webmvcpp
         http_response(const http_response &);
         http_response & operator=(const http_response &);
     public:
-        http_response(int s):
-        socketDescriptor(s)
+        http_response(network::tcp_socket & s):
+        socket(s)
         {
             clear();
         }
@@ -29,11 +29,11 @@ namespace webmvcpp
         
         void end()
         {
-            ::send(socketDescriptor, "0\r\n\r\n", 5, WEBMVCPP_SENDDATA_FLAGS);
+            socket.send((const unsigned char *)"0\r\n\r\n", 5);
         }
         
         void
-        send_header() const
+        send_header()
         {
             std::ostringstream os;
             
@@ -52,7 +52,7 @@ namespace webmvcpp
                 os << "Connection: Close\r\n";
             os << "\r\n";
             
-            ::send(socketDescriptor, os.str().c_str(), os.str().length(), WEBMVCPP_SENDDATA_FLAGS);
+            socket.send((const unsigned char *)os.str().c_str(), (unsigned long)os.str().length());
         }
         
         void
@@ -81,9 +81,9 @@ namespace webmvcpp
                     hexStrm << std::hex << rSize << "\r\n";
                     std::string hexStr = hexStrm.str();
                     
-                    ::send(socketDescriptor, hexStr.c_str(), hexStr.length(), WEBMVCPP_SENDDATA_FLAGS);
-                    ::send(socketDescriptor, (const char *)&fileBuffer.front(), (int)rSize, WEBMVCPP_SENDDATA_FLAGS);
-                    ::send(socketDescriptor, "\r\n", 2, WEBMVCPP_SENDDATA_FLAGS);
+                    socket.send((const unsigned char *)hexStr.c_str(), hexStr.length());
+                    socket.send(&fileBuffer.front(), (int)rSize);
+                    socket.send((const unsigned char *)"\r\n", 2);
                     
                     rPos += rSize;
                 }
@@ -110,9 +110,9 @@ namespace webmvcpp
                 hexStrm << std::hex << rSize << "\r\n";
                 std::string hexStr = hexStrm.str();
                 
-                ::send(socketDescriptor, hexStr.c_str(), hexStr.length(), WEBMVCPP_SENDDATA_FLAGS);
-                ::send(socketDescriptor, (const char *)&fileBuffer.front(), (int)rSize, WEBMVCPP_SENDDATA_FLAGS);
-                ::send(socketDescriptor, "\r\n", 2, WEBMVCPP_SENDDATA_FLAGS);
+                socket.send((const unsigned char *)hexStr.c_str(), hexStr.length());
+                socket.send(&fileBuffer.front(), (int)rSize);
+                socket.send((const unsigned char *)"\r\n", 2);
                 
                 rPos += rSize;
             }
@@ -132,9 +132,9 @@ namespace webmvcpp
                 hexStrm << std::hex << cFragmentLength << "\r\n";
                 std::string hexStr = hexStrm.str();
                 
-                ::send(socketDescriptor, hexStr.c_str(), hexStr.length(), WEBMVCPP_SENDDATA_FLAGS);
-                ::send(socketDescriptor, (const char *)&bytes.front() + cPtr, cFragmentLength, WEBMVCPP_SENDDATA_FLAGS);
-                ::send(socketDescriptor, "\r\n", 2, WEBMVCPP_SENDDATA_FLAGS);
+                socket.send((const unsigned char *)hexStr.c_str(), hexStr.length());
+                socket.send(&bytes.front() + cPtr, cFragmentLength);
+                socket.send((const unsigned char *)"\r\n", 2);
                 
                 cPtr += cFragmentLength;
             }
@@ -154,9 +154,9 @@ namespace webmvcpp
                 hexStrm << std::hex << cFragmentLength << "\r\n";
                 std::string hexStr = hexStrm.str();
                 
-                ::send(socketDescriptor, hexStr.c_str(), hexStr.length(), WEBMVCPP_SENDDATA_FLAGS);
-                ::send(socketDescriptor, (const char *)text.c_str() + cPtr, cFragmentLength, WEBMVCPP_SENDDATA_FLAGS);
-                ::send(socketDescriptor, "\r\n", 2, WEBMVCPP_SENDDATA_FLAGS);
+                socket.send((const unsigned char *)hexStr.c_str(), hexStr.length());
+                socket.send((const unsigned char *)(text.c_str() + cPtr), cFragmentLength);
+                socket.send((const unsigned char *)"\r\n", 2);
                 
                 cPtr += cFragmentLength;
             }
@@ -180,7 +180,7 @@ namespace webmvcpp
         bool isCompressed;
         bool isKeepAlive;
         
-        int socketDescriptor;
+        network::tcp_socket & socket;
     };
 }
 #endif // WEBMVCPP_HTTPRESPONSE_H

@@ -12,7 +12,6 @@ namespace webmvcpp
         maxConnections(100),
         connectionsPerIp(10),
         maximumTimeout(30),
-        listenSocket(-1),
         running(false)
         {}
 
@@ -26,46 +25,15 @@ namespace webmvcpp
 
             do
             {
-                listenSocket = socket(AF_INET, SOCK_STREAM, 0);
-                if (listenSocket == -1)
+                network::tcp_socket serverSocket;
+                if (!serverSocket.socket_is_valid())
                 {
                     webmvcpp::systemutils::sleep(10 * 1000);
                     continue;
                 }
 
-                sockaddr_in servAddr;
-                sockaddr_in cliAddr;
-
-                memset((char *)&servAddr, 0, sizeof(servAddr));
-
-                servAddr.sin_family = AF_INET;
-                servAddr.sin_port = htons(port);
-                servAddr.sin_addr.s_addr = INADDR_ANY;
-#ifdef _WIN32
-                const char yes = 1;
-#else
-                const int yes = 1;
-#endif
-                if (setsockopt(listenSocket, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1)
+                if (!serverSocket.listen(port))
                 {
-                    close();
-
-                    webmvcpp::systemutils::sleep(10 * 1000);
-                    continue;
-                }
-
-                if (bind(listenSocket, (struct sockaddr *) &servAddr, sizeof(servAddr)) == -1)
-                {
-                    close();
-
-                    webmvcpp::systemutils::sleep(10 * 1000);
-                    continue;
-                }
-
-                if (listen(listenSocket, SOMAXCONN) != 0)
-                {
-                    close();
-
                     webmvcpp::systemutils::sleep(10 * 1000);
                     continue;
                 }
@@ -74,29 +42,21 @@ namespace webmvcpp
                 {
                     if (!is_new_connection_permited())
                         continue;
-#ifdef _WIN32
-                    int cliAddrLen = 0;
-#else
-                    socklen_t cliAddrLen = 0;
-#endif
 
-                    cliAddrLen = sizeof(cliAddr);
-
-                    int clientSocket = accept(listenSocket, (struct sockaddr *) &cliAddr, &cliAddrLen);
-                    if (clientSocket == -1)
+                    network::tcp_socket *clientSocket = serverSocket.accept();
+                    if (clientSocket == NULL)
                     {
-                        close();
                         break;
                     }
 
-                    unsigned long ipAddr = cliAddr.sin_addr.s_addr;
+                    unsigned long ipAddr = clientSocket->remoteAddr.sin_addr.s_addr;
                     http_incoming_connection *connection = new http_incoming_connection(mvcCore, this, ipAddr, clientSocket);
                     retain_connection(ipAddr, connection);
                     if (!systemutils::create_thread(connection_thread_routine, connection))
                     {
-                        connection->close();
                         release_connection(ipAddr, connection);
                         delete connection;
+                        delete clientSocket;
                     }
                 }
             } while (running);
@@ -115,13 +75,13 @@ namespace webmvcpp
             http_server_prototype *server = connection->http_server();
             unsigned long ipAddress = connection->get_ip_address();
             std::unique_ptr<http_incoming_connection> threadCleaner(connection);
+            std::unique_ptr<network::tcp_socket> socketCleaner(connection->get_client_socket());
 
             if (server->is_connection_permitted(ipAddress))
             {
                 connection->exec();
             }
 
-            connection->close();
             server->release_connection(ipAddress, connection);
 
             return 0;
@@ -168,26 +128,6 @@ namespace webmvcpp
         stop()
         {
             running = false;
-
-            close();
-        }
-
-
-
-
-    private:
-        void
-        close()
-        {
-            if (listenSocket != -1)
-            {
-#ifdef _WIN32
-                ::closesocket(listenSocket);
-#else
-                ::close(listenSocket);
-#endif
-                listenSocket = -1;
-            }
         }
 
         core_prototype *mvcCore;
@@ -201,7 +141,6 @@ namespace webmvcpp
         std::set<http_incoming_connection *> activeConnections;
         std::map<unsigned long, unsigned long> ipConnections;
 
-        int listenSocket;
         bool running;
     };
 }

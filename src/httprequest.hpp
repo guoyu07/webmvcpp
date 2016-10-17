@@ -25,21 +25,23 @@ namespace webmvcpp
         http_request(const http_request &);
         http_request & operator=(const http_request &);
     public:
-        http_request(const std::string & m, const std::string & h, const std::string & u, const http_values & q = http_values()) :
-        socketDescriptor(0),
+        http_request(network::tcp_socket & s, const std::string & m, const std::string & h, const std::string & p, const http_values & q = http_values()) :
         method(m),
+        path(p),
         host(h),
-        url(u)
+        socket(s)
         {
             for (http_values::const_iterator it = q.begin(); it != q.end(); ++it)
             {
                 queryString += it->first + "=" + it->second;
                 if (std::next(it) != q.end()) queryString += "&";
             }
+
+            url = q.size() == 0 ? path : path + "?" + queryString;
         }
 
-        http_request(int s):
-        socketDescriptor(s)
+        http_request(network::tcp_socket & s):
+        socket(s)
         {
             clear();
         }
@@ -83,7 +85,7 @@ namespace webmvcpp
             
             streamData.resize(64 * 1024);
             
-            ::recv(socketDescriptor, (char *)&streamData.front(), streamData.size(), WEBMVCPP_RECVDATA_FLAGS);
+            socket.recv(&streamData.front(), streamData.size());
             
             return readyRead;
         }
@@ -91,19 +93,8 @@ namespace webmvcpp
         bool
         wait_for_data()
         {
-            fd_set readfds;
-            FD_ZERO(&readfds);
-            FD_SET(socketDescriptor, &readfds);
-            
             timeval t = { 30, 0 };
-            int ret = select(socketDescriptor + 1, &readfds, NULL, NULL, &t);
-            if (ret == 0 || ret == -1)
-                return false;
-            
-            if (FD_ISSET(socketDescriptor, &readfds))
-                return true;
-            
-            return false;
+            return socket.wait_for_read(&t);
         }
                
         bool rangesExist;
@@ -135,7 +126,7 @@ namespace webmvcpp
 
         std::vector<unsigned char> content;
         
-        int socketDescriptor;
+        network::tcp_socket & socket;
     };
 }
 #endif // WEBMVCPP_HTTPREQUEST_H

@@ -72,11 +72,11 @@ int main()
     headers_hpp.push_back("3rdparty/md5.hpp");
     headers_hpp.push_back("src/buildinfo.hpp");
     headers_hpp.push_back("src/utils.hpp");
+    headers_hpp.push_back("src/tcpsocket.hpp");
     headers_hpp.push_back("src/systemutils.hpp");
     headers_hpp.push_back("src/httprequest.hpp");
     headers_hpp.push_back("src/httpresponse.hpp");
     headers_hpp.push_back("src/mvcppshared.hpp");
-    headers_hpp.push_back("src/connection.hpp");
     headers_hpp.push_back("src/authentication.hpp");
     headers_hpp.push_back("src/variant.hpp");
     headers_hpp.push_back("src/errorpage.hpp");

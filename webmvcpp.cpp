@@ -18,6 +18,7 @@ extern "C" {
 
 #include "src/utils.hpp"
 #include "src/systemutils.hpp"
+#include "src/tcpsocket.hpp"
 
 #include "src/httprequest.hpp"
 #include "src/httpresponse.hpp"
@@ -39,6 +40,16 @@ extern "C" {
 #include "src/httpclient.hpp"
 #include "src/requestmanager.hpp"
 
+#ifdef _WIN32
+namespace network {
+    void
+    initialize()
+    {
+        WSAData wsaData;
+        ::WSAStartup(MAKEWORD(2, 2), &wsaData);
+    }
+}
+#endif
 
 #include "src/applicationloader.hpp"
 #include "src/httpserver.hpp"

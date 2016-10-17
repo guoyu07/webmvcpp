@@ -24,13 +24,12 @@ namespace webmvcpp
 
             return 0;
         }
-
         
         static int response_status_cb(http_parser *p, const char *buf, size_t len)
         {
             http_response_parser *_this = static_cast<http_response_parser *>(p->data);
             std::ostringstream responseStatus;
-            responseStatus << p->status_code << std::string(buf, len);
+            responseStatus << p->status_code << " " << std::string(buf, len);
             _this->response.status = responseStatus.str();
 
             return 0;

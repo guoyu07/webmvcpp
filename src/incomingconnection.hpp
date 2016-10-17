@@ -7,14 +7,14 @@ namespace webmvcpp
     {
         http_incoming_connection();
     public:
-        http_incoming_connection(core_prototype *c, http_server_prototype *s, unsigned long ipAddr, int socket):
-        socketDescriptor(socket),
+        http_incoming_connection(core_prototype *c, http_server_prototype *s, unsigned long ipAddr, network::tcp_socket *socket):
         ipAddress(ipAddr),
-        request(socket),
-        response(socket),
-        httpReqParser(request),
+        request(*socket),
+        response(*socket),
         mvcCore(c),
-        httpServer(s)
+        httpServer(s),
+        httpReqParser(request),
+        clientSocket(socket)
         {
             recvBuffer.resize(16 * 1024);
         }
@@ -39,7 +39,7 @@ namespace webmvcpp
                 {
                     request.isKeepAlive = false;
                     const char *fatalErrorMessage = "HTTP/1.1 500 OK\r\nConnection: close\r\n\r\n<h3>Internal server error</h3><p>WebMVCpp - Your C++ MVC Web Engine</p>";
-                    ::send(socketDescriptor, fatalErrorMessage, strlen(fatalErrorMessage), WEBMVCPP_SENDDATA_FLAGS);
+                    clientSocket->send((const unsigned char *)fatalErrorMessage, strlen(fatalErrorMessage));
                     break;
                 }
             } while (request.isKeepAlive);
@@ -48,20 +48,6 @@ namespace webmvcpp
         unsigned long get_ip_address() { return ipAddress; }
         core_prototype *mvc_core() { return mvcCore; }
         http_server_prototype *http_server() { return httpServer; }
-
-        void close()
-        {
-            if (socketDescriptor != -1)
-            {
-#ifdef _WIN32
-                ::closesocket(socketDescriptor);
-#else
-                ::close(socketDescriptor);
-#endif
-                socketDescriptor = -1;
-            }
-            
-        }
         
         bool
         wait_for_header(http_request & request)
@@ -72,8 +58,8 @@ namespace webmvcpp
                 if (!readyRead)
                     return false;
                 
-                size_t rcvBytes = ::recv(socketDescriptor, (char *)&recvBuffer.front(), recvBuffer.size(), WEBMVCPP_RECVDATA_FLAGS);
-                if (rcvBytes == 0 || rcvBytes == -1)
+                int rcvBytes = clientSocket->recv(&recvBuffer.front(), recvBuffer.size());
+                if (rcvBytes == -1)
                     return false;
                 
                 httpReqParser.accept_data(&recvBuffer.front(), rcvBytes);
@@ -91,8 +77,8 @@ namespace webmvcpp
                 if (!readyRead)
                     return false;
                 
-                size_t rcvBytes = ::recv(socketDescriptor, (char *)&recvBuffer.front(), recvBuffer.size(), WEBMVCPP_RECVDATA_FLAGS);
-                if (rcvBytes == 0 || rcvBytes == -1)
+                int rcvBytes = clientSocket->recv(&recvBuffer.front(), recvBuffer.size());
+                if (rcvBytes == -1)
                     return false;
                 
                 httpReqParser.accept_data(&recvBuffer.front(), rcvBytes);
@@ -101,6 +87,7 @@ namespace webmvcpp
             return true;
         }
         
+        network::tcp_socket *get_client_socket() { return clientSocket; }
     private:
         std::vector<unsigned char> recvBuffer;
         unsigned long ipAddress;
@@ -112,7 +99,7 @@ namespace webmvcpp
         http_server_prototype *httpServer;
         
         http_request_parser httpReqParser;
-        int socketDescriptor;
+        network::tcp_socket * clientSocket;
     };
 }
 

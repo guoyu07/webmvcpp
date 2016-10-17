@@ -34,8 +34,7 @@ namespace webmvcpp
             startTimestamp = std::time(NULL);
             srand((unsigned int)std::time(NULL));
 #if defined (_WIN32)
-            WSADATA wsaData;
-            WSAStartup(MAKEWORD(2, 2), &wsaData);
+            network::initialize();
 #endif
         }
 
