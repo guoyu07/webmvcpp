@@ -645,7 +645,7 @@ namespace webmvcpp
             return true;
         }
 
-        bool compile(const std::string & sourceFile, std::string & objFile, std::string & result)
+        bool compile(const std::string & sourceFile, const std::list<std::string> & definitions, const std::list<std::string> & includeDirectories, std::string & objFile,  std::string & result)
         {
             std::vector<std::string> splittedFile = utils::split_string(sourceFile, '.');
             if (splittedFile.size() < 2)
@@ -663,8 +663,20 @@ namespace webmvcpp
                 return false;
 
 #if defined (_WIN32)
+            for (std::list<std::string>::const_iterator it = definitions.begin(); it != definitions.end(); ++it) {
+                cmd << " /D" << *it;
+            }
+            for (std::list<std::string>::const_iterator it = includeDirectories.begin(); it != includeDirectories.end(); ++it) {
+                cmd << " /I\"" << *it << "\"";
+            }
             cmd << " /I\"" << webApplicationPath << "\" \"" << sourceFile << "\" " << "/Fo\"" << objFile << "\"";
 #else
+            for (std::list<std::string>::const_iterator it = definitions.begin(); it != definitions.end(); ++it) {
+                cmd << " -D" << *it;
+        }
+            for (std::list<std::string>::const_iterator it = includeDirectories.begin(); it != includeDirectories.end(); ++it) {
+                cmd << " -I\"" << *it << "\"";
+            }
             cmd << " -I\"" << webApplicationPath << "\" \"" << sourceFile << "\" " << "-o\"" << objFile << "\"";
 #endif
             printf("%s\n", cmd.str().c_str());
@@ -697,9 +709,9 @@ namespace webmvcpp
         }
 
 #if defined (_WIN32)
-        bool linkApplication(const std::list<std::string> & objFiles, std::string & defFile, std::string & appFile, std::string & result)
+        bool linkApplication(const std::list<std::string> & objFiles, const std::list<std::string> & linkLinbraries, std::string & defFile, std::string & appFile, std::string & result)
 #else
-        bool linkApplication(const std::list<std::string> & objFiles, std::string & appFile, std::string & result)
+        bool linkApplication(const std::list<std::string> & objFiles, const std::list<std::string> & linkLinbraries, std::string & appFile, std::string & result)
 #endif
         {
             std::ostringstream cmd;
@@ -712,6 +724,18 @@ namespace webmvcpp
 
 #if defined (_WIN32)
             cmd << " /DEF:\"" << defFile << "\"";
+#endif
+
+#if defined (_WIN32)
+            for (std::list<std::string>::const_iterator it = linkLinbraries.begin(); it != linkLinbraries.end(); ++it)
+            {
+                cmd << " \"" << *it << "\"";
+            }
+#else
+            for (std::list<std::string>::const_iterator it = linkLinbraries.begin(); it != linkLinbraries.end(); ++it)
+            {
+                cmd << "-l\"" << *it << "\"";
+            }
 #endif
 
 #if defined (_WIN32)

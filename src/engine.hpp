@@ -18,7 +18,12 @@ namespace webmvcpp
         bool sessionsEnabled = false;
         unsigned long sessionTimeout = 24;
         std::string staticPath;
+
         std::string webappPath;
+        std::string binaryOutputDirectory;
+        std::list<std::string> includeDirectories;
+        std::list<std::string> linkLibraries;
+        std::list<std::string> definitions;
 
         nlohmann::json rawObject;
     };
@@ -230,8 +235,48 @@ namespace webmvcpp
                     }
                     json::const_iterator moduleIt = webAppConfig.find("module");
                     if (moduleIt != webAppConfig.end()) {
-                        const auto moduleValue = moduleIt.value();
-                        config.modulePath = moduleValue.get<std::string>();
+                        if (moduleIt->is_string()) {
+                            const auto moduleValue = moduleIt.value();
+                            config.modulePath = moduleValue.get<std::string>();
+                        }
+                        else if (moduleIt->is_array()) {
+                            const auto & buildMdlParams = moduleIt.value();
+
+                            const json::const_iterator webappPathIt = buildMdlParams.find("webappPath");
+                            if (webappPathIt != buildMdlParams.end()) {
+                                const auto webappPathValue = webappPathIt.value();
+                                config.webappPath = webappPathValue.get<std::string>();
+                            }
+                            const json::const_iterator binaryOutputDirectoryIt = buildMdlParams.find("binaryOutputDirectory");
+                            if (binaryOutputDirectoryIt != buildMdlParams.end()) {
+                                const auto binaryOutputDirectoryValue = binaryOutputDirectoryIt.value();
+                                config.binaryOutputDirectory = binaryOutputDirectoryValue.get<std::string>();
+                            }
+                            const json::const_iterator includeDirectoriesIt = buildMdlParams.find("includeDirectories");
+                            if (includeDirectoriesIt != buildMdlParams.end()) {
+                                const auto includeDirectoriesValue = includeDirectoriesIt.value();
+                                for (json::const_iterator includeDirectoryIt = includeDirectoriesValue.begin(); includeDirectoryIt != includeDirectoriesValue.end(); ++includeDirectoryIt) {
+                                    const auto includeDirectoryObj = *includeDirectoryIt;
+                                    config.includeDirectories.push_back(includeDirectoryObj.get<std::string>());
+                                }
+                            }
+                            const json::const_iterator linkLibrariesIt = buildMdlParams.find("linkLibraries");
+                            if (linkLibrariesIt != buildMdlParams.end()) {
+                                const auto linkLibrariesValue = linkLibrariesIt.value();
+                                for (json::const_iterator linkLibraryIt = linkLibrariesValue.begin(); linkLibraryIt != linkLibrariesValue.end(); ++linkLibraryIt) {
+                                    const auto linkLibraryObj = *linkLibraryIt;
+                                    config.linkLibraries.push_back(linkLibraryObj.get<std::string>());
+                                }
+                            }
+                            const json::const_iterator definitionsIt = buildMdlParams.find("definitions");
+                            if (definitionsIt != buildMdlParams.end()) {
+                                const auto definitionsValue = definitionsIt.value();
+                                for (json::const_iterator defineIt = definitionsValue.begin(); defineIt != definitionsValue.end(); ++defineIt) {
+                                    const auto defineObj = *defineIt;
+                                    config.definitions.push_back(defineObj.get<std::string>());
+                                }
+                            }
+                        }
                     }
                     json::const_iterator sessionEnabledIt = webAppConfig.find("sessionsEnabled");
                     if (sessionEnabledIt != webAppConfig.end()) {
@@ -260,6 +305,7 @@ namespace webmvcpp
                     if (config.webappPath.length() == 0) {
                         config.webappPath = utils::get_parent_directory(config.modulePath) + "/webapp";
                     }
+
                     webApplicationConfigs.insert(std::pair<const std::string, webappconfig>(webAppName, config));
                 }
             }
@@ -317,7 +363,7 @@ namespace webmvcpp
                 {
                     std::string buildedAppPath;
                     std::cout << "build application: " << cIt->first << std::endl;
-                    if (build_application(cIt->first, cIt->second.webappPath, buildedAppPath)) {
+                    if (build_application(cIt->first, cIt->second.webappPath, cIt->second.definitions, cIt->second.includeDirectories, cIt->second.linkLibraries, buildedAppPath)) {
                         cIt->second.modulePath = buildedAppPath;
                         std::cout << "application module: " << buildedAppPath << std::endl;
                     }
@@ -340,7 +386,7 @@ namespace webmvcpp
         }
 
     private:
-        bool build_application(const std::string & appName, std::string & webAppPath, std::string & resultPath)
+        bool build_application(const std::string & appName, std::string & webAppPath, const std::list<std::string> & definitions, const std::list<std::string> & includeDirectories, const std::list<std::string> & linkLibraries, std::string & resultPath)
         {
             bool buildResult = true;
             std::list<std::string> sourcefiles;
@@ -409,7 +455,7 @@ namespace webmvcpp
                 tmpObjNameStrm << tmpDirectoryPath << "/" << ++fileNumber;
                 std::string tmpObjName = tmpObjNameStrm.str();
 #endif
-                if (!webAppbuilder.compile(*sourceIt, tmpObjName, result)) {
+                if (!webAppbuilder.compile(*sourceIt, definitions, includeDirectories, tmpObjName, result)) {
                     buildResult = false;
                     break;
                 }
@@ -423,10 +469,10 @@ namespace webmvcpp
 #if defined (_WIN32)
                 webAppFile += ".dll";
                 std::string defFile = webAppPath + "/" + appName + ".def";
-                buildResult = webAppbuilder.linkApplication(objFiles, defFile, webAppFile, linkAppResult);
+                buildResult = webAppbuilder.linkApplication(objFiles, linkLibraries, defFile, webAppFile, linkAppResult);
 #else
                 webAppFile += ".so";
-                buildResult = webAppbuilder.linkApplication(objFiles, webAppFile, linkAppResult);
+                buildResult = webAppbuilder.linkApplication(objFiles, linkLibraries, webAppFile, linkAppResult);
 #endif
                 if (buildResult)
                     resultPath = webAppFile;
