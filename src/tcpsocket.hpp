@@ -124,29 +124,7 @@ namespace network {
         int
         send(const unsigned char *buffer, unsigned long datalen)
         {
-            unsigned long sendedBytes = 0;
-            do
-            {
-                fd_set fds;
-                FD_ZERO(&fds);
-                FD_SET(socketDescriptor, &fds);
-
-                unsigned long sended = ::send(socketDescriptor, (const char *)&buffer[sendedBytes], datalen - sendedBytes, WEBMVCPP_SENDDATA_FLAGS);
-
-                timeval sendTimeout = { TCPSTREAM_SOCKET_TIMEOUT, 0 };
-                int iRC = ::select(0, NULL, &fds, NULL, &sendTimeout);
-
-                if (!iRC)
-                    return -1;
-                if (iRC < 0)
-                    return -1;
-
-                if (sended == -1 || sended == 0)
-                    break;
-
-                sendedBytes += sended;
-
-            } while (sendedBytes != datalen);
+            unsigned long sendedBytes = ::send(socketDescriptor, (const char *)buffer, datalen, WEBMVCPP_SENDDATA_FLAGS);
             return sendedBytes;
         }
 
@@ -154,7 +132,6 @@ namespace network {
         recv(unsigned char *buffer, unsigned long datalen)
         {
             unsigned long recived = ::recv(socketDescriptor, (char *)buffer, datalen, WEBMVCPP_RECVDATA_FLAGS);
-
             if (recived == -1 || recived == 0)
                 return -1;
 
