@@ -239,9 +239,8 @@ namespace webmvcpp
                             const auto moduleValue = moduleIt.value();
                             config.modulePath = moduleValue.get<std::string>();
                         }
-                        else if (moduleIt->is_array()) {
+                        else if (moduleIt->is_object()) {
                             const auto & buildMdlParams = moduleIt.value();
-
                             const json::const_iterator webappPathIt = buildMdlParams.find("webappPath");
                             if (webappPathIt != buildMdlParams.end()) {
                                 const auto webappPathValue = webappPathIt.value();
