@@ -85,9 +85,9 @@ namespace webmvcpp
             
             streamData.resize(64 * 1024);
             
-            socket.recv(&streamData.front(), streamData.size());
+            socket >> streamData;
             
-            return readyRead;
+            return streamData.size() != 0;
         }
         
         bool

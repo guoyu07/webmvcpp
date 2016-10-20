@@ -29,7 +29,7 @@ namespace webmvcpp
         
         void end()
         {
-            socket.send((const unsigned char *)"0\r\n\r\n", 5);
+            socket << "0\r\n\r\n";
         }
         
         void
@@ -52,7 +52,7 @@ namespace webmvcpp
                 os << "Connection: Close\r\n";
             os << "\r\n";
             
-            socket.send((const unsigned char *)os.str().c_str(), (unsigned long)os.str().length());
+            socket << os.str();
         }
         
         void
@@ -74,16 +74,14 @@ namespace webmvcpp
                 std::streamoff rPos = 0;
                 while (rPos != length)
                 {
-                    std::streamoff rSize = min(64 * 1024, length - rPos);
+                    std::streamoff rSize = min(fileBuffer.size(), length - rPos);
+                    fileBuffer.resize((unsigned long)rSize);
                     fs.read((char *)&fileBuffer.front(), rSize);
                     
                     std::ostringstream hexStrm;
                     hexStrm << std::hex << rSize << "\r\n";
-                    std::string hexStr = hexStrm.str();
                     
-                    socket.send((const unsigned char *)hexStr.c_str(), hexStr.length());
-                    socket.send(&fileBuffer.front(), (int)rSize);
-                    socket.send((const unsigned char *)"\r\n", 2);
+                    socket << hexStrm.str() << fileBuffer << "\r\n";
                     
                     rPos += rSize;
                 }
@@ -103,16 +101,14 @@ namespace webmvcpp
             std::streamoff rPos = 0;
             while (rPos != length)
             {
-                std::streamoff rSize = min(64 * 1024, length - rPos);
+                std::streamoff rSize = min(fileBuffer.size(), length - rPos);
+                fileBuffer.resize((unsigned long)rSize);
                 fs.read((char *)&fileBuffer.front(), rSize);
                 
                 std::ostringstream hexStrm;
                 hexStrm << std::hex << rSize << "\r\n";
-                std::string hexStr = hexStrm.str();
                 
-                socket.send((const unsigned char *)hexStr.c_str(), hexStr.length());
-                socket.send(&fileBuffer.front(), (int)rSize);
-                socket.send((const unsigned char *)"\r\n", 2);
+                socket << hexStrm.str() << fileBuffer << "\r\n";
                 
                 rPos += rSize;
             }
@@ -130,11 +126,8 @@ namespace webmvcpp
                 
                 std::ostringstream hexStrm;
                 hexStrm << std::hex << cFragmentLength << "\r\n";
-                std::string hexStr = hexStrm.str();
                 
-                socket.send((const unsigned char *)hexStr.c_str(), hexStr.length());
-                socket.send(&bytes.front() + cPtr, cFragmentLength);
-                socket.send((const unsigned char *)"\r\n", 2);
+                socket << hexStrm.str() << network::memory_fragment{ &bytes.front() + cPtr, cFragmentLength } << "\r\n";
                 
                 cPtr += cFragmentLength;
             }
@@ -152,11 +145,8 @@ namespace webmvcpp
                 
                 std::ostringstream hexStrm;
                 hexStrm << std::hex << cFragmentLength << "\r\n";
-                std::string hexStr = hexStrm.str();
                 
-                socket.send((const unsigned char *)hexStr.c_str(), hexStr.length());
-                socket.send((const unsigned char *)(text.c_str() + cPtr), cFragmentLength);
-                socket.send((const unsigned char *)"\r\n", 2);
+                socket << hexStrm.str() << network::memory_fragment{ (const unsigned char *)(text.c_str() + cPtr), cFragmentLength } << "\r\n";
                 
                 cPtr += cFragmentLength;
             }

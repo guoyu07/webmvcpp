@@ -25,17 +25,17 @@ namespace webmvcpp
             outData << "User-Agent: " << (request.userAgent.length() > 0 ? request.userAgent : "WebMVC++") << "\x0d\x0a";
             outData << "\x0d\x0a";
 
-            s.send((const unsigned char *)outData.str().c_str(), outData.str().length());
+            s << outData.str();
 
             http_response_parser responseParser(response);
 
             std::vector<unsigned char> recvBuffer;
-            recvBuffer.resize(16384);
             do {
-                int bytesReceived = s.recv(&recvBuffer.front(), recvBuffer.size());
-                if (bytesReceived < 0)
+                recvBuffer.resize(16384);
+                s >> recvBuffer;
+                if (recvBuffer.size() == 0)
                     return false;
-                responseParser.accept_data(&recvBuffer.front(), bytesReceived);
+                responseParser.accept_data(&recvBuffer.front(), recvBuffer.size());
             } while (!responseParser.is_body_received() || !responseParser.is_header_received());
 
             return true;

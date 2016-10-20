@@ -31,7 +31,7 @@ namespace webmvcpp
 
         std::string calc_digest(const std::string &auth, const std::string &user, const std::string &realm, const std::string &pass, const std::string &method, const std::string &uri)
         {
-            char *nonce = "06a1a23153d48e59f", *cnonce = "1z2c2v7w9v", *qop = "auth";
+            const char *nonce = "06a1a23153d48e59f", *cnonce = "1z2c2v7w9v", *qop = "auth";
 
             std::string ha = MD5::calc(method + ":" + uri);
             std::string ha1 = MD5::calc(user + ":" + realm + ":" + pass);

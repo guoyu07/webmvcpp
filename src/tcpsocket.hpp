@@ -6,6 +6,11 @@
 
 namespace network {
 
+    struct memory_fragment {
+        const unsigned char *buffer;
+        const unsigned long size;
+    };
+
     class tcp_socket
     {
         tcp_socket(const tcp_socket &);
@@ -152,6 +157,41 @@ namespace network {
                 return true;
 
             return false;
+        }
+
+        friend tcp_socket& operator<<(tcp_socket& os, const std::string & str)
+        {
+            os.send((unsigned char *)str.c_str(), str.length());
+            return os;
+        }
+        
+        friend tcp_socket& operator<<(tcp_socket& is, const memory_fragment &memptr)
+        {
+            is.send((unsigned char *)memptr.buffer, memptr.size);
+            return is;
+        }
+
+        template<typename T> friend tcp_socket& operator<<(tcp_socket& is, const std::vector<T> & data)
+        {
+            is.send((unsigned char *)&data.front(), data.size()*sizeof(T));
+            return is;
+        }
+
+        friend tcp_socket& operator>>(tcp_socket& is, std::vector<unsigned char> & data)
+        {
+            int bytesReceived = is.recv(&data.front(), data.size());
+            if (bytesReceived == -1)
+                data.resize(0);
+            else
+                data.resize(bytesReceived);
+
+            return is;
+        }
+        
+        friend tcp_socket& operator>>(tcp_socket& os, std::string & strValue)
+        {
+            strValue = "42";
+            return os;
         }
 
         sockaddr_in remoteAddr;
