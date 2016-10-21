@@ -15,10 +15,13 @@ namespace webmvcpp
         }
 
         void
-        process_request(webapplication *mvcapp, http_incoming_connection *connection, http_request & request, http_response & response)
+        process_request(webapplication *mvcapp, http_connection_context *ctx)
         {
-            response.status = "200 OK";
+            http_request & request = ctx->request;
+            http_response & response = ctx->response;
 
+            response.status = "200 OK";
+            
             std::map<std::string, std::string> & routeMap = mvcapp->routeMap;
             std::map<std::string, std::string>::const_iterator routeIt = routeMap.find(request.path);
             if (routeIt != routeMap.cend())
@@ -43,7 +46,7 @@ namespace webmvcpp
             std::set<std::string> & controllers = mvcapp->handlers->controllers;
             if (splittedPath.size()>2 && controllers.find(controllerName) != controllers.end())
             {
-                send_mvc_page(mvcapp, controllerName, connection, request, response);
+                send_mvc_page(mvcapp, controllerName, ctx);
             }
             else
                 send_static_file(mvcapp, request, response);
@@ -199,13 +202,38 @@ namespace webmvcpp
             return true;
         }
 
-        void
-        send_mvc_page(webapplication *mvcapp, const std::string & controllerName, http_incoming_connection *connection, http_request & request, http_response & response)
+        static bool wait_for_content(http_connection_context *ctx)
         {
+            http_request & request = ctx->request;
+            http_request_parser & httpReqParser = ctx->httpReqParser;
+            std::vector<unsigned char> recvBuffer;
+            
+            while (!httpReqParser.is_body_received())
+            {
+                recvBuffer.resize(16*1024);
+                bool readyRead = request.wait_for_data();
+                if (!readyRead)
+                    return false;
+                
+                ctx->clientSocket >> recvBuffer;
+                if (recvBuffer.size() == 0)
+                    return false;
+                
+                httpReqParser.accept_data(&recvBuffer.front(), recvBuffer.size());
+            }
+            
+            return true;
+        }
+        
+        void
+        send_mvc_page(webapplication *mvcapp, const std::string & controllerName, http_connection_context *ctx)
+        {
+            http_request & request = ctx->request;
+            http_response & response = ctx->response;
+            session_manager *sessionManager = ctx->mvcCore->get_session_manager();
+
             response.contentType = "text/html";
-
-            session_manager *sessionManager = connection->mvc_core()->get_session_manager();
-
+            
             std::string sessionId;
 
             session sessionContext;
@@ -236,7 +264,7 @@ namespace webmvcpp
             if (reqModelIt == reqModels.cend())
             {
                 if (request.method == "POST")
-                    connection->wait_for_content(request);
+                    wait_for_content(ctx);
             }
             else
             {
@@ -249,7 +277,7 @@ namespace webmvcpp
                     {
                         const std::set<std::string> & flags = postReqModel->second.flags;
                         if (flags.find(MVCPP_MODEL_FLAGS_STREAM) == flags.cend())
-                            connection->wait_for_content(request);
+                            wait_for_content(ctx);
                     }
 
                 }

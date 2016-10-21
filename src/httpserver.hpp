@@ -3,6 +3,32 @@
 
 namespace webmvcpp
 {
+    struct http_connection_context
+    {
+    public:
+        http_connection_context(core_prototype *core, http_server_prototype *server, network::tcp_socket *socket, const unsigned long ip):
+        ipAddress(ip),
+        clientSocket(socket->detach(), socket->get_socket_addr()),
+        request(clientSocket),
+        response(clientSocket),
+        mvcCore(core),
+        httpServer(server),
+        httpReqParser(request)
+        {}
+
+        unsigned long ipAddress;
+
+        network::tcp_socket clientSocket;
+
+        http_request request;
+        http_response response;
+
+        core_prototype *mvcCore;
+        http_server_prototype *httpServer;
+        
+        http_request_parser httpReqParser;
+    };
+
     class http_server : public http_server_prototype
     {
         http_server();
@@ -50,17 +76,41 @@ namespace webmvcpp
                     }
 
                     unsigned long ipAddr = clientSocket->remoteAddr.sin_addr.s_addr;
-                    http_incoming_connection *connection = new http_incoming_connection(mvcCore, this, ipAddr, clientSocket);
-                    retain_connection(ipAddr, connection);
-                    if (!systemutils::create_thread(connection_thread_routine, connection))
+                    http_connection_context *ctx = new http_connection_context(mvcCore, this, clientSocket, ipAddr);
+                    
+                    retain_connection(ctx);
+                    if (!systemutils::create_thread(connection_thread_routine, ctx))
                     {
-                        release_connection(ipAddr, connection);
-                        delete connection;
+                        release_connection(ctx);
                         delete clientSocket;
                     }
                 }
             } while (running);
 
+            return true;
+        }
+        
+        
+        static bool wait_for_header(http_connection_context *ctx)
+        {
+            http_request & request = ctx->request;
+            http_request_parser & httpReqParser = ctx->httpReqParser;
+            std::vector<unsigned char> recvBuffer;
+            recvBuffer.resize(2048);
+            while (!httpReqParser.is_header_received())
+            {
+                bool readyRead = request.wait_for_data();
+                if (!readyRead)
+                    return false;
+                
+                ctx->clientSocket >> recvBuffer;
+                if (recvBuffer.size()==0) {
+                    return false;
+                }
+                
+                httpReqParser.accept_data(&recvBuffer.front(), recvBuffer.size());
+            }
+            
             return true;
         }
 
@@ -71,18 +121,37 @@ namespace webmvcpp
 #endif
         connection_thread_routine(void *threadParam)
         {
-            http_incoming_connection *connection = static_cast<http_incoming_connection *>(threadParam);
-            http_server_prototype *server = connection->http_server();
-            unsigned long ipAddress = connection->get_ip_address();
-            std::unique_ptr<http_incoming_connection> threadCleaner(connection);
-            std::unique_ptr<network::tcp_socket> socketCleaner(connection->get_client_socket());
+            http_connection_context *ctx = static_cast<http_connection_context *>(threadParam);
+            http_server_prototype *server = ctx->httpServer;
+            std::unique_ptr<http_connection_context> ctxCleaner(ctx);
 
-            if (server->is_connection_permitted(ipAddress))
+            if (server->is_connection_permitted(ctx->ipAddress))
             {
-                connection->exec();
+                http_request & request = ctx->request;
+                http_response & response = ctx->response;
+                do
+                {
+                    request.clear();
+                    response.clear();
+                    
+                    try
+                    {
+                        if (!wait_for_header(ctx))
+                            break;
+                        
+                        if (!ctx->mvcCore->process_request(ctx))
+                            request.isKeepAlive = false;
+                    }
+                    catch (...)
+                    {
+                        request.isKeepAlive = false;
+                        error_page::send(ctx->response, 500, "Internal Server Error", "<h3>Internal server error</h3><p>WebMVCpp - Your C++ MVC Web Engine</p>");
+                        break;
+                    }
+                } while (request.isKeepAlive);
             }
 
-            server->release_connection(ipAddress, connection);
+            server->release_connection(ctx);
 
             return 0;
         }
@@ -105,23 +174,23 @@ namespace webmvcpp
         }
 
         void 
-        retain_connection(unsigned long ipAddress, http_incoming_connection *c)
+        retain_connection(http_connection_context *ctx)
         {
             std::unique_lock<std::mutex> lm(connectionsCountLock);
 
-            activeConnections.insert(c);
+            activeConnections.insert(ctx);
 
-            ipConnections[ipAddress]++;
+            ipConnections[ctx->ipAddress]++;
         }
 
         void
-        release_connection(unsigned long ipAddress, http_incoming_connection *c)
+        release_connection(http_connection_context *ctx)
         {
             std::unique_lock<std::mutex> lm(connectionsCountLock);
 
-            activeConnections.erase(c);
+            activeConnections.erase(ctx);
 
-            ipConnections[ipAddress]--;
+            ipConnections[ctx->ipAddress]--;
         }
 
         void
@@ -138,7 +207,7 @@ namespace webmvcpp
 
         std::condition_variable connection_conditions;
         std::mutex connectionsCountLock;
-        std::set<http_incoming_connection *> activeConnections;
+        std::set<http_connection_context *> activeConnections;
         std::map<unsigned long, unsigned long> ipConnections;
 
         bool running;

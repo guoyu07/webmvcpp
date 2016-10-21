@@ -18,16 +18,10 @@ namespace network {
 
         int socketDescriptor;
     public:
-        tcp_socket():
-        socketDescriptor(socket(AF_INET, SOCK_STREAM, 0))
-        {
-            memset(&remoteAddr, 0, sizeof(remoteAddr));
-        }
-
-        tcp_socket(int s) :
+        tcp_socket(int s = socket(AF_INET, SOCK_STREAM, 0), const sockaddr_in addr = {0}):
         socketDescriptor(s)
         {
-            memset(&remoteAddr, 0, sizeof(remoteAddr));
+            remoteAddr = addr;
         }
 
         ~tcp_socket()
@@ -36,6 +30,14 @@ namespace network {
         }
 
         bool socket_is_valid() { return socketDescriptor != -1; }
+        sockaddr_in & get_socket_addr() {return remoteAddr;}
+        
+        int detach()
+        {
+            int socketValue = socketDescriptor;
+            socketDescriptor = -1;
+            return socketValue;
+        }
 
         void close()
         {
@@ -51,7 +53,7 @@ namespace network {
         }
 
         bool
-        connect(unsigned long addr, unsigned short port)
+        connect(uint32_t addr, unsigned short port)
         {
             remoteAddr.sin_family = AF_INET;
             remoteAddr.sin_port = htons(port);
@@ -81,7 +83,7 @@ namespace network {
         }
 
         bool
-        listen(unsigned long addr, unsigned short port)
+        listen(uint32_t addr, unsigned short port)
         {
             remoteAddr.sin_addr.s_addr = addr;
             remoteAddr.sin_family = AF_INET;
@@ -106,7 +108,7 @@ namespace network {
             return listen(INADDR_ANY, port);
         }
 
-        tcp_socket*
+        tcp_socket *
         accept()
         {
             sockaddr_in cliAddr;
@@ -121,22 +123,22 @@ namespace network {
             if (s == -1)
                 return NULL;
 
-            tcp_socket* acceptedStream = new tcp_socket(s);
-            acceptedStream->remoteAddr = cliAddr;
-            return acceptedStream;
+            
+            
+            return new tcp_socket(s, cliAddr);
         }
 
-        int
+        long
         send(const unsigned char *buffer, unsigned long datalen)
         {
-            unsigned long sendedBytes = ::send(socketDescriptor, (const char *)buffer, datalen, WEBMVCPP_SENDDATA_FLAGS);
+            long sendedBytes = ::send(socketDescriptor, (const char *)buffer, datalen, WEBMVCPP_SENDDATA_FLAGS);
             return sendedBytes;
         }
 
-        int
+        long
         recv(unsigned char *buffer, unsigned long datalen)
         {
-            unsigned long recived = ::recv(socketDescriptor, (char *)buffer, datalen, WEBMVCPP_RECVDATA_FLAGS);
+            long recived = ::recv(socketDescriptor, (char *)buffer, datalen, WEBMVCPP_RECVDATA_FLAGS);
             if (recived == -1 || recived == 0)
                 return -1;
 
@@ -179,7 +181,7 @@ namespace network {
 
         friend tcp_socket& operator>>(tcp_socket& is, std::vector<unsigned char> & data)
         {
-            int bytesReceived = is.recv(&data.front(), data.size());
+            long bytesReceived = is.recv(&data.front(), data.size());
             if (bytesReceived == -1)
                 data.resize(0);
             else

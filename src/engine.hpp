@@ -38,9 +38,6 @@ namespace webmvcpp
         {
             startTimestamp = std::time(NULL);
             srand((unsigned int)std::time(NULL));
-#if defined (_WIN32)
-            network::initialize();
-#endif
         }
 
         const time_t get_start_timestamp() { return startTimestamp; }
@@ -341,16 +338,16 @@ namespace webmvcpp
         virtual mime_file_types_prototype *get_mime_types() { return &mimeTypes; }
         virtual session_manager *get_session_manager() { return &sessionManager; }
 
-        virtual bool process_request(http_incoming_connection *connection, http_request & request, http_response & response)
+        virtual bool process_request(http_connection_context *ctx)
         {
-            std::map<std::string, webapplication_module_ptr>::iterator it = webApps.find(request.host);
+            std::map<std::string, webapplication_module_ptr>::iterator it = webApps.find(ctx->request.host);
             if (it == webApps.end())
             {
-                error_page::send(response, 403, "Forbidden", "Access to this host is forbidden by default");
+                error_page::send(ctx->response, 403, "Forbidden", "Access to this host is forbidden by default");
                 return false;
             }
 
-            requestManager.process_request(it->second->instance(), connection, request, response);
+            requestManager.process_request(it->second->instance(), ctx);
 
             return true;
         }

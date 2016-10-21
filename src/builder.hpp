@@ -587,7 +587,7 @@ namespace webmvcpp
                                 curPos = blockEnd + std::string(WEBMVC_CLOSEBLOCK_END).length();
                                 prevPos = curPos;
                             }
-                            unsigned int contentLength = currentPageContent.length();
+                            size_t contentLength = currentPageContent.length();
                             if (prevPos != contentLength) {
                                 pageContent += currentPageContent.substr(prevPos, contentLength - prevPos);
                             }

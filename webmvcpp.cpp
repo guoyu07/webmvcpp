@@ -36,9 +36,13 @@ extern "C" {
 #include "src/webapplication.hpp"
 #include "src/sessionmanager.hpp"
 #include "src/mimefiletypes.hpp"
-#include "src/incomingconnection.hpp"
 #include "src/httpclient.hpp"
+
+#include "src/applicationloader.hpp"
+#include "src/httpserver.hpp"
 #include "src/requestmanager.hpp"
+#include "src/builder.hpp"
+#include "src/engine.hpp"
 
 #ifdef _WIN32
 namespace network {
@@ -51,10 +55,6 @@ namespace network {
 }
 #endif
 
-#include "src/applicationloader.hpp"
-#include "src/httpserver.hpp"
-#include "src/builder.hpp"
-#include "src/engine.hpp"
 
 #ifndef WEBMVCPP_AMALGAMATION
 const char webmvcpp_headers_hpp_amalgamation[] = {0};
@@ -63,6 +63,9 @@ const char webmvcpp_headers_hpp_amalgamation[] = {0};
 
 int main(int argc, char *args[])
 {
+#if defined (_WIN32)
+    network::initialize();
+#endif
     bool startAsDaemon = false;
     bool buildOnly = false;
     std::string webApp;
