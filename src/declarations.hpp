@@ -41,14 +41,14 @@
 #include <arpa/inet.h>
 #include <dirent.h>
 #include <sys/stat.h>
+#include <netdb.h>
 #endif
 
 #ifdef __linux
 #include <unistd.h>
 #include <pwd.h>
 #include <sys/auxv.h>
-#include <netdb.h>
-#endif 
+#endif
 
 #ifdef __APPLE__
 #include <stdint.h>
