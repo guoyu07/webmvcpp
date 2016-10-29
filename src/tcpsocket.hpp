@@ -189,12 +189,6 @@ namespace network {
 
             return is;
         }
-        
-        friend tcp_socket& operator>>(tcp_socket& os, std::string & strValue)
-        {
-            strValue = "42";
-            return os;
-        }
 
         sockaddr_in remoteAddr;
     };

@@ -20,7 +20,7 @@ namespace webmvcpp
         std::set<std::string> controllers;
         std::map<std::string, std::map<std::string, request_model>> models;
         std::map<std::string, webmvcpp_request_handler> requests;
-        std::map<std::string, webmvcpp_controller_requests_handler> controllerRequests;
+        std::map<std::string, webmvcpp_request_handler> controllerRequests;
         std::map<std::string, webmvcpp_service_handler> services;
 
         static mvc_handlers *g;
@@ -138,19 +138,16 @@ namespace webmvcpp
     {
         gadd_request_handler();
     public:
-        gadd_request_handler(const std::string & url, webmvcpp_request_handler fn)
+        gadd_request_handler(const std::string & controller, const std::string & method, webmvcpp_request_handler fn)
         {
-            webmvcpp::mvc_handlers::global()->requests.insert(std::pair<std::string, webmvcpp_request_handler>(url, fn));
-        }
-    };
-
-    class gset_controller_requests_handler
-    {
-        gset_controller_requests_handler();
-    public:
-        gset_controller_requests_handler(const std::string & name, webmvcpp_controller_requests_handler fn)
-        {
-            webmvcpp::mvc_handlers::global()->controllerRequests.insert(std::pair<std::string, webmvcpp_controller_requests_handler>(name, fn));
+            if (method.length() == 0) {
+                const std::string url = "/" + controller;
+                webmvcpp::mvc_handlers::global()->controllerRequests.insert(std::pair<std::string, webmvcpp_request_handler>(controller, fn));
+            }
+            else {
+                const std::string url = "/" + controller + "/" + method;
+                webmvcpp::mvc_handlers::global()->requests.insert(std::pair<std::string, webmvcpp_request_handler>(url, fn));
+            }
         }
     };
 
@@ -178,8 +175,9 @@ namespace webmvcpp
     {
         gadd_view_handler();
     public:
-        gadd_view_handler(const std::string & url, webmvcpp_view_handler fn)
+        gadd_view_handler(const std::string & controller, const std::string & method, webmvcpp_view_handler fn)
         {
+            const std::string url = "/" + controller + "/" + method;
             webmvcpp::mvc_handlers::global()->views.insert(std::pair<std::string, webmvcpp_view_handler>(url, fn));
         }
     };

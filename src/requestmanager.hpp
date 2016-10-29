@@ -290,19 +290,20 @@ namespace webmvcpp
 
             }
 
-            std::map<std::string, webmvcpp_controller_requests_handler> & ctrlReqs = mvcapp->handlers->controllerRequests;
-            std::map<std::string, webmvcpp_controller_requests_handler>::const_iterator reqContrlrHandlerIt = ctrlReqs.find(controllerName);
+            mvc_view_data viewData;
+
+            std::map<std::string, webmvcpp_request_handler> & ctrlReqs = mvcapp->handlers->controllerRequests;
+            std::map<std::string, webmvcpp_request_handler>::const_iterator reqContrlrHandlerIt = ctrlReqs.find(controllerName);
             if (reqContrlrHandlerIt != ctrlReqs.end())
             {
                 std::lock_guard<std::mutex> locker(sessionContext->get_lock());
 
-                if (!reqContrlrHandlerIt->second(request, response, sessionContext->get_data()))
+                if (!reqContrlrHandlerIt->second(request, response, sessionContext->get_data(), viewData))
                 {
                     return;
                 }
             }
             
-            mvc_view_data viewData;
             std::map<std::string, webmvcpp_request_handler> & req = mvcapp->handlers->requests;
             std::map<std::string, webmvcpp_request_handler>::const_iterator reqHandlerIt = req.find(request.path);
             if (reqHandlerIt != req.end())

@@ -60,7 +60,6 @@ namespace network {
 const char webmvcpp_headers_hpp_amalgamation[] = {0};
 #endif
 
-
 int main(int argc, char *args[])
 {
 #if defined (_WIN32)
@@ -76,8 +75,8 @@ int main(int argc, char *args[])
         std::cout << "    -B, --build\t\t\t Build web application, arguments: <.webmvcpp file>" << std::endl;
         std::cout << "    -C, --create\t\t Create new web application, arguments: <name>" << std::endl;
         std::cout << "    -T, --test\t\t\t Test application config, arguments: <.webmvcpp file>" << std::endl;
-        std::cout << "    -I, --daemon\t\t Install" << std::endl;
-        std::cout << "    -U, --daemon\t\t Uninstall" << std::endl;
+        std::cout << "    -I, --install\t\t Install" << std::endl;
+        std::cout << "    -U, --uninstall\t\t Uninstall" << std::endl;
         std::cout << "    -V, --version\t\t Print version" << std::endl;
 
         return -1;
