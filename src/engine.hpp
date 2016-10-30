@@ -136,7 +136,7 @@ namespace webmvcpp
 
         void create_application(const std::string & appName)
         {
-            builder webAppbuilder(appName);
+            webapplication_generator webAppbuilder(appName);
             webAppbuilder.create_application();
         }
 
@@ -387,7 +387,7 @@ namespace webmvcpp
             bool buildResult = true;
             std::list<std::string> sourcefiles;
 
-            builder webAppbuilder(appName, webAppPath);
+            webapplication_builder webAppbuilder(appName, webAppPath);
 
             DIR *webappDir = opendir(webAppPath.c_str());
             if (!webappDir)
