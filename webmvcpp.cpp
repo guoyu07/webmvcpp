@@ -41,7 +41,8 @@ extern "C" {
 #include "src/applicationloader.hpp"
 #include "src/httpserver.hpp"
 #include "src/requestmanager.hpp"
-#include "src/builder.hpp"
+#include "src/applicationbuilder.hpp"
+#include "src/applicationgenerator.hpp"
 #include "src/engine.hpp"
 
 #ifdef _WIN32
