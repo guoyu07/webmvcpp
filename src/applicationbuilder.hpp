@@ -501,7 +501,7 @@ namespace webmvcpp
 
 #if defined (_WIN32)
         const char *compiler_c_flags = "/c /Ox /nologo";
-        const char *compiler_cpp_flags = "/c /EHsc /Ox /nologo";
+        const char *compiler_cpp_flags = "/c /EHsc /GR- /Ox /nologo";
         const char *linker_flags = "/DLL /SUBSYSTEM:CONSOLE /nologo";
 #elif (__APPLE__)
         const char *compiler_c_flags = "-O3 -fPIC -Wall -Ofast -fno-rtti -c";
